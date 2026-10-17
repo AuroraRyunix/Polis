@@ -42,8 +42,8 @@ unsigned installer: "More info", then "Run anyway". The data is in
 An installed copy looks for a newer release now and then (one small
 request to GitHub, switched off by a checkbox) and offers it; it installs
 nothing without a yes, and not while a sheet is printing unless the yes is
-given twice. How releases
-are cut and what each file is: [docs/releasing.md](docs/releasing.md).
+given twice. How releases are cut and what each file is:
+[docs/releasing.md](docs/releasing.md).
 
 ## Using it
 
