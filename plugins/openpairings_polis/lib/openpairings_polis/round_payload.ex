@@ -1,0 +1,150 @@
+defmodule OpenPairingsPolis.RoundPayload do
+  @moduledoc """
+  The round a station is sent: the hall-link protocol's round payload,
+  identical in shape to the hall announcer's (see `docs/protocol.md` in the
+  Polis repository).
+
+  The boards are the core's printed pairing list
+  (`PairingsEngineWeb.PrintController.pairing_list/2`): hidden pairings
+  left out, the frozen display boards and their order
+  (`PairingsEngine.PairingDisplay.with_display_boards/1`), each player's
+  score coming into the round
+  (`PairingsEngine.Standings.player_scores_before_round/2`), and the rating
+  by the tournament's own rating method (`Player.rating/2`). What the hall
+  printer prints is what the arbiter's own printer would have.
+
+  `rev` is the SHA-256 of the payload without it, so "has anything
+  changed?" is a string comparison and the station can say "already
+  printed that" for free.
+  """
+  alias PairingsEngine.{PairingDisplay, Repo, Standings, Tournaments}
+  alias PairingsEngine.Tournaments.{Player, Round, Tournament}
+
+  @doc """
+  The latest published round's payload, `{:ok, number, payload}`; `:none`
+  while nothing is public.
+  """
+  def latest(%Tournament{} = tournament) do
+    case Tournaments.latest_published_round_number(tournament) do
+      0 -> :none
+      n -> with {:ok, payload} <- build(tournament, n), do: {:ok, n, payload}
+    end
+  end
+
+  @doc """
+  Round `number`'s payload, `{:ok, map}` with string keys ready for JSON, or
+  `:none` when that round is not paired or not public. Not public means not
+  sent, whoever asks.
+  """
+  def build(%Tournament{} = tournament, number) when is_integer(number) do
+    tournament = Repo.preload(tournament, :user)
+
+    case Tournaments.get_round(tournament.id, number) do
+      %Round{} = round ->
+        if Tournaments.round_published?(tournament, round),
+          do: {:ok, payload(tournament, round)},
+          else: :none
+
+      nil ->
+        :none
+    end
+  end
+
+  defp payload(tournament, round) do
+    scores = Standings.player_scores_before_round(tournament, round.number)
+
+    boards =
+      round.pairings
+      |> Enum.reject(& &1.hidden)
+      |> PairingDisplay.with_display_boards()
+      |> Enum.map(fn %{pairing: p, board: board} ->
+        %{
+          "board" => to_string(board),
+          "white" => player(p.white_player, tournament, scores),
+          "black" => player(p.black_player, tournament, scores),
+          "bye" => if(is_nil(p.black_player), do: "bye")
+        }
+      end)
+
+    body = %{
+      "tournament" => %{
+        "id" => tournament.id,
+        "name" => tournament.name,
+        "city" => tournament.city || "",
+        "dates" => dates(tournament)
+      },
+      "round" => round.number,
+      "rounds" => tournament.rounds_count,
+      "published_at" => round.published_at && DateTime.to_iso8601(round.published_at),
+      "locale" => locale(tournament),
+      "rating_label" => rating_label(tournament),
+      "team" => Tournament.team?(tournament),
+      "boards" => boards
+    }
+
+    Map.put(body, "rev", rev(body))
+  end
+
+  @doc "SHA-256 (hex) of the payload's JSON. Maps this small encode in key order, so it is stable."
+  def rev(body), do: body |> Jason.encode!() |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+
+  defp player(nil, _tournament, _scores), do: nil
+
+  defp player(%Player{} = p, tournament, scores) do
+    %{
+      "name" => p.name,
+      "spoken" => spoken(p.name),
+      "title" => p.title || "",
+      "rating" => Player.rating(p, tournament),
+      "federation" => p.federation || "",
+      "club" => p.club || "",
+      "number" => p.pairing_number,
+      "score" => score(Map.get(scores, p.id, 0.0))
+    }
+  end
+
+  @doc ~s(A name as it is said: "Carlsen, Magnus" becomes "Magnus Carlsen"; a name without a comma stays as it is.)
+  def spoken(nil), do: ""
+
+  def spoken(name) do
+    case String.split(name, ",", parts: 2) do
+      [last, first] ->
+        case String.trim(first) do
+          "" -> String.trim(last)
+          first -> first <> " " <> String.trim(last)
+        end
+
+      [_] ->
+        String.trim(name)
+    end
+  end
+
+  # "2", "2.5": what the printed pairing list puts in brackets.
+  defp score(v) when is_float(v) do
+    if v == Float.round(v, 0), do: Integer.to_string(trunc(v)), else: Float.to_string(v)
+  end
+
+  defp score(v) when is_integer(v), do: Integer.to_string(v)
+  defp score(v), do: to_string(v)
+
+  defp dates(%{start_date: s, end_date: e}) do
+    case {s || "", e || ""} do
+      {"", ""} -> ""
+      {s, ""} -> s
+      {"", e} -> e
+      {same, same} -> same
+      {s, e} -> s <> " - " <> e
+    end
+  end
+
+  @doc ~s(The owner's account language, as the station should print: "nl" or "en".)
+  def locale(%Tournament{user: %{locale: "nl" <> _}}), do: "nl"
+  def locale(%Tournament{}), do: "en"
+
+  # The column header the printed list uses for the same number (the print
+  # controller's own reading, which is private there): "Elo" where FIDE
+  # leads, "Nat." for a national list, "Rtg" for anything else.
+  defp rating_label(%{rating_method: method}) when method in ["FIDE", "FIDON", nil], do: "Elo"
+  defp rating_label(%{rating_method: method}) when method in ["NRO", "NIDOF"], do: "Nat."
+  defp rating_label(_tournament), do: "Rtg"
+end
