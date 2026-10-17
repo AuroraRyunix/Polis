@@ -36,6 +36,11 @@ defmodule PolisWeb.Layouts do
   attr :locale, :string, required: true
   attr :page, :atom, values: [:station, :help], required: true
   attr :subtitle, :string, default: nil
+
+  attr :notice, :map,
+    default: nil,
+    doc: "`Polis.Updates.notice/0`; the station page has its own, larger section"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -47,6 +52,10 @@ defmodule PolisWeb.Layouts do
         </h1>
         <p class="note">{gettext("Prints the pairings and the place cards of every new round.")}</p>
       </header>
+      <p :if={@notice && @page != :station} id="update-banner" class="banner" role="status">
+        {gettext("Polis %{version} is out.", version: @notice.version)}
+        <a id="update-banner-station" href="/#update">{gettext("Install it on the station page")}</a>
+      </p>
       <.flash_group flash={@flash} />
       {render_slot(@inner_block)}
       <footer id="foot" class="foot">

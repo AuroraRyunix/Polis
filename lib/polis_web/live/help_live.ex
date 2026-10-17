@@ -13,12 +13,22 @@ defmodule PolisWeb.HelpLive do
   use PolisWeb, :live_view
 
   @impl true
-  def mount(_params, _session, socket), do: {:ok, socket}
+  def mount(_params, _session, socket) do
+    if connected?(socket), do: Phoenix.PubSub.subscribe(Polis.PubSub, Polis.Updates.topic())
+    {:ok, assign(socket, notice: Polis.Updates.notice())}
+  end
+
+  # A newer version heard of, or put off: the banner follows.
+  @impl true
+  def handle_info(:update_changed, socket),
+    do: {:noreply, assign(socket, notice: Polis.Updates.notice())}
+
+  def handle_info(_other, socket), do: {:noreply, socket}
 
   @impl true
   def render(%{locale: "nl"} = assigns) do
     ~H"""
-    <Layouts.app flash={@flash} locale={@locale} page={:help} subtitle="Help">
+    <Layouts.app flash={@flash} locale={@locale} page={:help} subtitle="Help" notice={@notice}>
       <article id="manual">
         <section id="help-what">
           <h2>Wat Polis is</h2>
@@ -66,7 +76,7 @@ defmodule PolisWeb.HelpLive do
               Een ronde die de arbiter na het afdrukken nog wijzigt: niets vanzelf. Er komt "gewijzigd sinds het afgedrukt is" bij het toernooi te staan, met een knop "Opnieuw afdrukken". Een blad aan de muur dat vanzelf verandert, is erger dan een blad dat oud is.
             </li>
             <li>
-              "Ronde opnieuw printen" in OpenPairings: wat het noemt, meteen.
+              "Ronde N opnieuw printen" in OpenPairings: wat het noemt, meteen.
             </li>
           </ul>
           <p>
@@ -78,6 +88,28 @@ defmodule PolisWeb.HelpLive do
           <h2>De wachtrij</h2>
           <p>
             Elke afdruk staat in de wachtrij, de nieuwste bovenaan, met wat ermee gebeurd is: wacht op een printer, in de wachtrij, wordt afgedrukt, afgedrukt, of mislukt met de reden. "PDF openen" toont het blad zoals het afgedrukt wordt; "Opnieuw afdrukken" stuurt het nog een keer. De laatste vijftig blijven bewaard.
+          </p>
+        </section>
+
+        <section id="help-update">
+          <h2>Nieuwe versies</h2>
+          <p>
+            Polis kijkt af en toe of er een nieuwe versie is, en zegt het dan bovenaan de pagina. Installeren doe je zelf, met "Downloaden en installeren": het station is dan ongeveer een minuut weg, en wat in die minuut gepubliceerd wordt, komt daarna alsnog. Wordt er net een blad afgedrukt, dan wacht Polis tot het eruit is; "Toch installeren" is het tweede ja voor wie niet wil wachten. Wil je er niets van horen, zet dan "Af en toe naar een nieuwere versie kijken" uit.
+          </p>
+          <p>
+            De installatie voor Windows en die voor Linux (met install.sh) werken zichzelf bij. Een draagbare kopie en de Mac-app vervang je met de hand.
+          </p>
+        </section>
+
+        <section id="help-data">
+          <h2>Waar Polis bewaart wat het weet</h2>
+          <p>
+            Eén map, nooit binnen het programma zelf, zodat een update of het verwijderen van Polis er niet aan komt: op Windows <span class="mono">%LOCALAPPDATA%\PolisData</span>, op een Mac <span class="mono">~/Library/Application Support/PolisData</span>, op Linux met install.sh <span class="mono">/var/lib/polis</span>, anders <span class="mono">~/.polis</span>. De omgevingsvariabele
+            <span class="mono">POLIS_DATA</span>
+            kiest een andere.
+          </p>
+          <p>
+            Daarin staan de toernooien met hun sleutels, de instellingen en de laatste vijftig afdrukken. Geef die map aan niemand: met de sleutels kan een ander zich als dit station aanmelden.
           </p>
         </section>
 
@@ -102,7 +134,7 @@ defmodule PolisWeb.HelpLive do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} locale={@locale} page={:help} subtitle="Help">
+    <Layouts.app flash={@flash} locale={@locale} page={:help} subtitle="Help" notice={@notice}>
       <article id="manual">
         <section id="help-what">
           <h2>What Polis is</h2>
@@ -162,6 +194,28 @@ defmodule PolisWeb.HelpLive do
           <h2>The queue</h2>
           <p>
             Every print is in the queue, newest first, with what happened to it: waiting for a printer, queued, printing, printed, or failed with the reason. "Open PDF" shows the sheet as it prints; "Reprint" sends it once more. The last fifty are kept.
+          </p>
+        </section>
+
+        <section id="help-update">
+          <h2>New versions</h2>
+          <p>
+            Polis looks for a new version now and then and says so at the top of the page. Installing is yours to start, with "Download and install": the station is away for about a minute, and whatever is published in that minute arrives afterwards. When a sheet is printing, Polis waits until it is out; "Install anyway" is the second yes for whoever will not wait. To hear nothing of it, switch off "Look for a newer version now and then".
+          </p>
+          <p>
+            The Windows installation and the Linux one (with install.sh) update themselves. A portable copy and the Mac app are replaced by hand.
+          </p>
+        </section>
+
+        <section id="help-data">
+          <h2>Where Polis keeps what it knows</h2>
+          <p>
+            One folder, never inside the program itself, so that an update or removing Polis does not touch it: on Windows <span class="mono">%LOCALAPPDATA%\PolisData</span>, on a Mac <span class="mono">~/Library/Application Support/PolisData</span>, on Linux with install.sh <span class="mono">/var/lib/polis</span>, otherwise <span class="mono">~/.polis</span>. The environment variable
+            <span class="mono">POLIS_DATA</span>
+            picks another.
+          </p>
+          <p>
+            In it are the tournaments with their keys, the settings and the last fifty prints. Give that folder to nobody: with the keys, someone else can sign in as this station.
           </p>
         </section>
 

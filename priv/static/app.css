@@ -31,7 +31,7 @@ button { min-height: 40px; padding: .4rem 1rem; border: 1px solid var(--accent);
 button:hover { opacity: .85; }
 button:active { transform: scale(.97); }
 button[disabled] { opacity: .45; cursor: not-allowed; }
-button.danger, .actions button, #refresh-printers, #update-later, #check-now { background: transparent; color: var(--fg); border-color: var(--line); }
+button.danger, .actions button, #refresh-printers, #update-later, #check-now, #update-force { background: transparent; color: var(--fg); border-color: var(--line); }
 button.danger { color: var(--bad); border-color: var(--bad); min-height: 34px; }
 .switches { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .3rem; }
 .buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0 0; }
@@ -47,6 +47,8 @@ button.danger { color: var(--bad); border-color: var(--bad); min-height: 34px; }
 .error { color: var(--bad) !important; }
 .warn { color: var(--warn); display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .3rem 0; }
 .warn button { min-height: 34px; padding: .2rem .8rem; }
+.banner { margin: 1rem 0 0; padding: .6rem .8rem; border-radius: 8px; border: 1px solid var(--accent); display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: center; }
+.banner a { color: var(--accent); font-weight: 600; }
 .flash { padding: .6rem .8rem; border-radius: 8px; border: 1px solid currentColor; cursor: pointer; }
 ol { padding-left: 1.3rem; margin: .4rem 0 .8rem; }
 section p { margin: 0 0 .6rem; }

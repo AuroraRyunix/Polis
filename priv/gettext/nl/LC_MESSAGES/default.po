@@ -11,7 +11,7 @@ msgstr ""
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/polis_web/live/station_live.ex:474
+#: lib/polis_web/live/station_live.ex:494
 #, elixir-autogen, elixir-format
 msgid "%{name} (not found now)"
 msgstr "%{name} (nu niet gevonden)"
@@ -21,17 +21,12 @@ msgstr "%{name} (nu niet gevonden)"
 msgid "%{tournament} - round %{n}"
 msgstr "%{tournament} - ronde %{n}"
 
-#: lib/polis_web/live/station_live.ex:465
+#: lib/polis_web/live/station_live.ex:485
 #, elixir-autogen, elixir-format
 msgid "(choose a printer)"
 msgstr "(kies een printer)"
 
-#: lib/polis_web/live/station_live.ex:138
-#, elixir-autogen, elixir-format
-msgid "A sheet is printing. Try again when it is out."
-msgstr "Er wordt een blad afgedrukt. Probeer het opnieuw als het eruit is."
-
-#: lib/polis_web/layouts.ex:54
+#: lib/polis_web/layouts.ex:63
 #, elixir-autogen, elixir-format
 msgid "Back to the station"
 msgstr "Terug naar het station"
@@ -51,28 +46,28 @@ msgstr "Bord"
 msgid "Board %{n}"
 msgstr "Bord %{n}"
 
-#: lib/polis_web/live/station_live.ex:418
+#: lib/polis_web/live/station_live.ex:438
 #, elixir-autogen, elixir-format
 msgid "Copies of the pairings"
 msgstr "Exemplaren van de paringen"
 
-#: lib/polis_web/live/station_live.ex:208
-#: lib/polis_web/live/station_live.ex:219
+#: lib/polis_web/live/station_live.ex:213
+#: lib/polis_web/live/station_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Could not reach the release page."
 msgstr "De uitgavenpagina is niet te bereiken."
 
-#: lib/polis_web/live/station_live.ex:317
+#: lib/polis_web/live/station_live.ex:325
 #, elixir-autogen, elixir-format
 msgid "Download and install"
 msgstr "Downloaden en installeren"
 
-#: lib/polis_web/live/station_live.ex:457
+#: lib/polis_web/live/station_live.ex:477
 #, elixir-autogen, elixir-format
 msgid "Dry run: nothing goes to a printer. The sheets are written as PDF files in the data folder."
 msgstr "Proefdraaien: er gaat niets naar een printer. De bladen worden als PDF-bestanden in de gegevensmap geschreven."
 
-#: lib/polis_web/layouts.ex:53
+#: lib/polis_web/layouts.ex:62
 #, elixir-autogen, elixir-format
 msgid "Help"
 msgstr "Help"
@@ -82,72 +77,72 @@ msgstr "Help"
 msgid "If this frame is whole, the margins are right."
 msgstr "Is dit kader heel, dan kloppen de marges."
 
-#: lib/polis_web/live/station_live.ex:448
+#: lib/polis_web/live/station_live.ex:468
 #, elixir-autogen, elixir-format
 msgid "In OpenPairings: the tournament's Print station page, Add a print station. Paste the link it shows; that is all."
 msgstr "In OpenPairings: de pagina Printstation van het toernooi, Printstation toevoegen. Plak de link die verschijnt; meer is het niet."
 
-#: lib/polis_web/live/station_live.ex:443
+#: lib/polis_web/live/station_live.ex:463
 #, elixir-autogen, elixir-format
 msgid "Join"
 msgstr "Aansluiten"
 
-#: lib/polis_web/live/station_live.ex:432
+#: lib/polis_web/live/station_live.ex:452
 #, elixir-autogen, elixir-format
 msgid "Join a tournament"
 msgstr "Aansluiten bij een toernooi"
 
-#: lib/polis_web/live/station_live.ex:348
+#: lib/polis_web/live/station_live.ex:368
 #, elixir-autogen, elixir-format
 msgid "Joined to no tournament yet. Paste a join link below."
 msgstr "Nog bij geen enkel toernooi aangesloten. Plak hieronder een aansluitlink."
 
-#: lib/polis_web/live/station_live.ex:182
+#: lib/polis_web/live/station_live.ex:187
 #, elixir-autogen, elixir-format
 msgid "Joined. The next published round prints by itself."
 msgstr "Aangesloten. De volgende gepubliceerde ronde wordt vanzelf afgedrukt."
 
-#: lib/polis_web/live/station_live.ex:443
+#: lib/polis_web/live/station_live.ex:463
 #, elixir-autogen, elixir-format
 msgid "Joining..."
 msgstr "Aansluiten..."
 
-#: lib/polis_web/layouts.ex:55
+#: lib/polis_web/layouts.ex:64
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Taal"
 
-#: lib/polis_web/live/station_live.ex:333
+#: lib/polis_web/live/station_live.ex:353
 #, elixir-autogen, elixir-format
 msgid "Later"
 msgstr "Later"
 
-#: lib/polis_web/live/station_live.ex:367
+#: lib/polis_web/live/station_live.ex:387
 #, elixir-autogen, elixir-format
 msgid "Leave this tournament? Its rounds stop printing here."
 msgstr "Dit toernooi verlaten? Zijn rondes worden hier dan niet meer afgedrukt."
 
-#: lib/polis_web/live/station_live.ex:546
+#: lib/polis_web/live/station_live.ex:566
 #, elixir-autogen, elixir-format
 msgid "Look for a newer version now and then"
 msgstr "Af en toe naar een nieuwere versie kijken"
 
-#: lib/polis_web/live/station_live.ex:495
+#: lib/polis_web/live/station_live.ex:515
 #, elixir-autogen, elixir-format
 msgid "Look for printers again"
 msgstr "Opnieuw naar printers zoeken"
 
-#: lib/polis_web/live/station_live.ex:563
+#: lib/polis_web/live/station_live.ex:583
 #, elixir-autogen, elixir-format
 msgid "Look now"
 msgstr "Nu kijken"
 
-#: lib/polis_web/live/station_live.ex:486
+#: lib/polis_web/live/station_live.ex:506
 #, elixir-autogen, elixir-format
 msgid "Looking for printers..."
 msgstr "Printers zoeken..."
 
-#: lib/polis_web/live/station_live.ex:563
+#: lib/polis_web/live/station_live.ex:583
 #, elixir-autogen, elixir-format
 msgid "Looking..."
 msgstr "Kijken..."
@@ -157,27 +152,27 @@ msgstr "Kijken..."
 msgid "No boards in this round."
 msgstr "Geen borden in deze ronde."
 
-#: lib/polis_web/live/station_live.ex:491
+#: lib/polis_web/live/station_live.ex:511
 #, elixir-autogen, elixir-format
 msgid "No printer chosen. Rounds that arrive wait in the queue until one is."
 msgstr "Geen printer gekozen. Rondes die binnenkomen wachten in de wachtrij tot je er een kiest."
 
-#: lib/polis_web/live/station_live.ex:376
+#: lib/polis_web/live/station_live.ex:396
 #, elixir-autogen, elixir-format
 msgid "No round published yet."
 msgstr "Nog geen ronde gepubliceerd."
 
-#: lib/polis_web/live/station_live.ex:505
+#: lib/polis_web/live/station_live.ex:525
 #, elixir-autogen, elixir-format
 msgid "Nothing printed yet."
 msgstr "Nog niets afgedrukt."
 
-#: lib/polis_web/live/station_live.ex:305
+#: lib/polis_web/live/station_live.ex:310
 #, elixir-autogen, elixir-format
 msgid "Nothing prints for about a minute while it installs. It waits for a sheet that is printing."
 msgstr "Terwijl het installeert, wordt er ongeveer een minuut niets afgedrukt. Het wacht op een blad dat bezig is."
 
-#: lib/polis_web/live/station_live.ex:517
+#: lib/polis_web/live/station_live.ex:537
 #, elixir-autogen, elixir-format
 msgid "Open PDF"
 msgstr "PDF openen"
@@ -207,7 +202,7 @@ msgstr "Paringen - ronde %{n} van %{total}"
 msgid "Pairings, round %{n}"
 msgstr "Paringen, ronde %{n}"
 
-#: lib/polis_web/live/station_live.ex:479
+#: lib/polis_web/live/station_live.ex:499
 #, elixir-autogen, elixir-format
 msgid "Paper"
 msgstr "Papier"
@@ -227,23 +222,24 @@ msgstr "Tafelkaartjes"
 msgid "Place cards, round %{n}"
 msgstr "Tafelkaartjes, ronde %{n}"
 
-#: lib/polis_web/live/station_live.ex:300
+#: lib/polis_web/layouts.ex:56
+#: lib/polis_web/live/station_live.ex:305
 #, elixir-autogen, elixir-format
 msgid "Polis %{version} is out."
-msgstr "Polis %{version} is uit."
+msgstr "Polis %{version} is er."
 
-#: lib/polis_web/live/station_live.ex:401
+#: lib/polis_web/live/station_live.ex:421
 #, elixir-autogen, elixir-format
 msgid "Print the pairings"
 msgstr "De paringen afdrukken"
 
-#: lib/polis_web/live/station_live.ex:413
+#: lib/polis_web/live/station_live.ex:433
 #, elixir-autogen, elixir-format
 msgid "Print the place cards"
 msgstr "De tafelkaartjes afdrukken"
 
-#: lib/polis_web/live/station_live.ex:455
-#: lib/polis_web/live/station_live.ex:463
+#: lib/polis_web/live/station_live.ex:475
+#: lib/polis_web/live/station_live.ex:483
 #, elixir-autogen, elixir-format
 msgid "Printer"
 msgstr "Printer"
@@ -253,7 +249,7 @@ msgstr "Printer"
 msgid "Printer: %{name}"
 msgstr "Printer: %{name}"
 
-#: lib/polis_web/layouts.ex:48
+#: lib/polis_web/layouts.ex:53
 #, elixir-autogen, elixir-format
 msgid "Prints the pairings and the place cards of every new round."
 msgstr "Drukt de paringen en de tafelkaartjes van elke nieuwe ronde af."
@@ -264,125 +260,125 @@ msgstr "Drukt de paringen en de tafelkaartjes van elke nieuwe ronde af."
 msgid "Pts"
 msgstr "Ptn"
 
-#: lib/polis_web/live/station_live.ex:504
+#: lib/polis_web/live/station_live.ex:524
 #, elixir-autogen, elixir-format
 msgid "Queue"
 msgstr "Wachtrij"
 
-#: lib/polis_web/live/station_live.ex:325
+#: lib/polis_web/live/station_live.ex:333
 #, elixir-autogen, elixir-format
 msgid "Releases"
 msgstr "Uitgaven"
 
-#: lib/polis_web/live/station_live.ex:369
+#: lib/polis_web/live/station_live.ex:389
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "Verwijderen"
 
-#: lib/polis_web/live/station_live.ex:387
-#: lib/polis_web/live/station_live.ex:525
+#: lib/polis_web/live/station_live.ex:407
+#: lib/polis_web/live/station_live.ex:545
 #, elixir-autogen, elixir-format
 msgid "Reprint"
 msgstr "Opnieuw afdrukken"
 
-#: lib/polis_web/live/station_live.ex:380
+#: lib/polis_web/live/station_live.ex:400
 #, elixir-autogen, elixir-format
 msgid "Round %{n} changed since it was printed."
 msgstr "Ronde %{n} is gewijzigd sinds ze afgedrukt is."
 
-#: lib/polis_web/live/station_live.ex:374
+#: lib/polis_web/live/station_live.ex:394
 #, elixir-autogen, elixir-format
 msgid "Round %{n} is the latest published round."
 msgstr "Ronde %{n} is de laatst gepubliceerde ronde."
 
-#: lib/polis_web/live/station_live.ex:558
+#: lib/polis_web/live/station_live.ex:578
 #, elixir-autogen, elixir-format
 msgid "Start Polis when Windows starts"
 msgstr "Polis starten als Windows start"
 
 #: lib/polis/layout.ex:87
 #: lib/polis_web/components.ex:33
-#: lib/polis_web/live/station_live.ex:498
+#: lib/polis_web/live/station_live.ex:518
 #, elixir-autogen, elixir-format
 msgid "Test print"
 msgstr "Testafdruk"
 
-#: lib/polis_web/live/station_live.ex:247
+#: lib/polis_web/live/station_live.ex:252
 #, elixir-autogen, elixir-format
 msgid "That address answered, but not like an OpenPairings server."
 msgstr "Dat adres antwoordde, maar niet als een OpenPairings-server."
 
-#: lib/polis_web/live/station_live.ex:230
+#: lib/polis_web/live/station_live.ex:235
 #, elixir-autogen, elixir-format
 msgid "That is not a join link. It looks like https://server/p/polis/join/K7Q-4MD."
 msgstr "Dat is geen aansluitlink. Zo'n link ziet eruit als https://server/p/polis/join/K7Q-4MD."
 
-#: lib/polis_web/live/station_live.ex:234
+#: lib/polis_web/live/station_live.ex:239
 #, elixir-autogen, elixir-format
 msgid "That link is for another hall program, not for a print station. In OpenPairings, add a print station and use its link."
 msgstr "Die link is voor een ander zaalprogramma, niet voor een printstation. Voeg in OpenPairings een printstation toe en gebruik die link."
 
-#: lib/polis_web/live/station_live.ex:239
+#: lib/polis_web/live/station_live.ex:244
 #, elixir-autogen, elixir-format
 msgid "That link is used up or expired. Make a new one in OpenPairings."
 msgstr "Die link is al gebruikt of verlopen. Maak een nieuwe in OpenPairings."
 
-#: lib/polis_web/live/station_live.ex:242
+#: lib/polis_web/live/station_live.ex:247
 #, elixir-autogen, elixir-format
 msgid "That server speaks another version of the link. Update one of the two."
 msgstr "Die server spreekt een andere versie van de link. Werk een van de twee bij."
 
-#: lib/polis_web/live/station_live.ex:302
+#: lib/polis_web/live/station_live.ex:307
 #, elixir-autogen, elixir-format
 msgid "The download is %{mb} MB."
 msgstr "De download is %{mb} MB."
 
-#: lib/polis_web/live/station_live.ex:339
+#: lib/polis_web/live/station_live.ex:359
 #, elixir-autogen, elixir-format
 msgid "The last update, to %{version}, did not work: %{why}"
 msgstr "De laatste update, naar %{version}, is mislukt: %{why}"
 
-#: lib/polis_web/live/station_live.ex:488
+#: lib/polis_web/live/station_live.ex:508
 #, elixir-autogen, elixir-format
 msgid "The printer list did not come: %{why}"
 msgstr "De lijst met printers kwam niet: %{why}"
 
-#: lib/polis_web/live/station_live.ex:244
+#: lib/polis_web/live/station_live.ex:249
 #, elixir-autogen, elixir-format
 msgid "The server in that link does not answer from here."
 msgstr "De server in die link antwoordt niet vanaf hier."
 
-#: lib/polis_web/live/station_live.ex:313
+#: lib/polis_web/live/station_live.ex:318
 #, elixir-autogen, elixir-format
 msgid "There is no build for this machine."
 msgstr "Voor deze machine bestaat geen versie."
 
-#: lib/polis_web/live/station_live.ex:310
+#: lib/polis_web/live/station_live.ex:315
 #, elixir-autogen, elixir-format
 msgid "This copy is updated by hand: download the new one and replace this."
 msgstr "Deze kopie werk je met de hand bij: download de nieuwe en vervang deze."
 
-#: lib/polis_web/live/station_live.ex:207
+#: lib/polis_web/live/station_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "This is the newest version."
 msgstr "Dit is de nieuwste versie."
 
-#: lib/polis_web/live/station_live.ex:533
+#: lib/polis_web/live/station_live.ex:553
 #, elixir-autogen, elixir-format
 msgid "This program"
 msgstr "Dit programma"
 
-#: lib/polis_web/live/station_live.ex:346
+#: lib/polis_web/live/station_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "Tournaments"
 msgstr "Toernooien"
 
-#: lib/polis_web/live/station_live.ex:132
+#: lib/polis_web/live/station_live.ex:136
 #, elixir-autogen, elixir-format
 msgid "Updating. This page reconnects when the station is back."
 msgstr "Bijwerken. Deze pagina verbindt opnieuw zodra het station terug is."
 
-#: lib/polis_web/live/station_live.ex:535
+#: lib/polis_web/live/station_live.ex:555
 #, elixir-autogen, elixir-format
 msgid "Version"
 msgstr "Versie"
@@ -392,7 +388,7 @@ msgstr "Versie"
 msgid "White"
 msgstr "Wit"
 
-#: lib/polis_web/live/station_live.ex:170
+#: lib/polis_web/live/station_live.ex:175
 #, elixir-autogen, elixir-format
 msgid "Windows would not take that setting."
 msgstr "Windows wilde die instelling niet aannemen."
@@ -402,7 +398,7 @@ msgstr "Windows wilde die instelling niet aannemen."
 msgid "bye"
 msgstr "bye"
 
-#: lib/polis_web/live/station_live.ex:355
+#: lib/polis_web/live/station_live.ex:375
 #, elixir-autogen, elixir-format
 msgid "connected"
 msgstr "verbonden"
@@ -422,17 +418,17 @@ msgstr "mislukt: het station stopte tijdens het afdrukken"
 msgid "fold here"
 msgstr "hier vouwen"
 
-#: lib/polis_web/live/station_live.ex:253
+#: lib/polis_web/live/station_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "no answer in time"
 msgstr "geen antwoord op tijd"
 
-#: lib/polis_web/live/station_live.ex:251
+#: lib/polis_web/live/station_live.ex:256
 #, elixir-autogen, elixir-format
 msgid "nobody answers at that address"
 msgstr "niemand antwoordt op dat adres"
 
-#: lib/polis_web/live/station_live.ex:355
+#: lib/polis_web/live/station_live.ex:375
 #, elixir-autogen, elixir-format
 msgid "not connected"
 msgstr "niet verbonden"
@@ -452,42 +448,42 @@ msgstr "wordt afgedrukt"
 msgid "queued"
 msgstr "in de wachtrij"
 
-#: lib/polis_web/live/station_live.ex:259
+#: lib/polis_web/live/station_live.ex:264
 #, elixir-autogen, elixir-format
 msgid "refused: another version of the link; update one of the two"
 msgstr "geweigerd: een andere versie van de link; werk een van de twee bij"
 
-#: lib/polis_web/live/station_live.ex:262
+#: lib/polis_web/live/station_live.ex:267
 #, elixir-autogen, elixir-format
 msgid "refused: the server does not know this station's key; trying again in a minute"
 msgstr "geweigerd: de server kent de sleutel van dit station niet; over een minuut opnieuw"
 
-#: lib/polis_web/live/station_live.ex:264
+#: lib/polis_web/live/station_live.ex:269
 #, elixir-autogen, elixir-format
 msgid "refused; trying again in a minute"
 msgstr "geweigerd; over een minuut opnieuw"
 
-#: lib/polis_web/live/station_live.ex:252
+#: lib/polis_web/live/station_live.ex:257
 #, elixir-autogen, elixir-format
 msgid "that address does not exist"
 msgstr "dat adres bestaat niet"
 
-#: lib/polis_web/live/station_live.ex:256
+#: lib/polis_web/live/station_live.ex:261
 #, elixir-autogen, elixir-format
 msgid "that address does not take a line"
 msgstr "dat adres neemt geen verbinding aan"
 
-#: lib/polis_web/live/station_live.ex:265
+#: lib/polis_web/live/station_live.ex:270
 #, elixir-autogen, elixir-format
 msgid "the line went down; trying again"
 msgstr "de verbinding viel weg; opnieuw proberen"
 
-#: lib/polis_web/live/station_live.ex:254
+#: lib/polis_web/live/station_live.ex:259
 #, elixir-autogen, elixir-format
 msgid "the server closed the line"
 msgstr "de server sloot de verbinding"
 
-#: lib/polis_web/live/station_live.ex:255
+#: lib/polis_web/live/station_live.ex:260
 #, elixir-autogen, elixir-format
 msgid "the server went quiet"
 msgstr "de server zweeg"
@@ -496,3 +492,23 @@ msgstr "de server zweeg"
 #, elixir-autogen, elixir-format
 msgid "waiting for a printer"
 msgstr "wacht op een printer"
+
+#: lib/polis_web/live/station_live.ex:321
+#, elixir-autogen, elixir-format
+msgid "A sheet is printing. Try again when it is out, or install anyway."
+msgstr "Er wordt een blad afgedrukt. Probeer opnieuw als het eruit is, of installeer toch."
+
+#: lib/polis_web/live/station_live.ex:345
+#, elixir-autogen, elixir-format
+msgid "Install anyway"
+msgstr "Toch installeren"
+
+#: lib/polis_web/layouts.ex:57
+#, elixir-autogen, elixir-format
+msgid "Install it on the station page"
+msgstr "Installeer het op de stationspagina"
+
+#: lib/polis_web/live/station_live.ex:342
+#, elixir-autogen, elixir-format
+msgid "Install now anyway? The sheet that is printing may not come out whole."
+msgstr "Nu toch installeren? Het blad dat wordt afgedrukt, komt er misschien niet heel uit."

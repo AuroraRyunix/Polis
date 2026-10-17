@@ -39,6 +39,7 @@ defmodule PolisWeb.StationLive do
        joining?: false,
        message: nil,
        update_message: nil,
+       update_busy?: false,
        checking?: false,
        printers: nil,
        printers_error: nil
@@ -123,11 +124,14 @@ defmodule PolisWeb.StationLive do
 
   # --- the program ------------------------------------------------------------------------------
 
-  def handle_event("update", _params, socket) do
-    case Updates.apply() do
+  # A sheet that is printing makes the first press a question; "Install
+  # anyway" is the second yes, and the sheet is then on its own.
+  def handle_event("update", params, socket) do
+    case Updates.apply(force: params["force"] == "yes") do
       :ok ->
         {:noreply,
          assign(socket,
+           update_busy?: false,
            update_message:
              {:ok, gettext("Updating. This page reconnects when the station is back.")}
          )}
@@ -135,11 +139,12 @@ defmodule PolisWeb.StationLive do
       {:error, :busy} ->
         {:noreply,
          assign(socket,
-           update_message: {:error, gettext("A sheet is printing. Try again when it is out.")}
+           update_busy?: true,
+           update_message: nil
          )}
 
       {:error, _reason} ->
-        {:noreply, socket |> assign(update_message: nil) |> load()}
+        {:noreply, socket |> assign(update_message: nil, update_busy?: false) |> load()}
     end
   end
 
@@ -312,6 +317,9 @@ defmodule PolisWeb.StationLive do
         <p :if={@notice.no_build} class="note">
           {gettext("There is no build for this machine.")}
         </p>
+        <p :if={@update_busy?} id="update-busy" class="error" role="alert">
+          {gettext("A sheet is printing. Try again when it is out, or install anyway.")}
+        </p>
         <form id="update-form" phx-submit="update">
           <button :if={@install_kind != :manual} id="update-button" type="submit">
             {gettext("Download and install")}
@@ -324,6 +332,18 @@ defmodule PolisWeb.StationLive do
           >
             {gettext("Releases")}
           </a>
+          <button
+            :if={@update_busy? && @install_kind != :manual}
+            id="update-force"
+            type="button"
+            phx-click="update"
+            phx-value-force="yes"
+            data-confirm={
+              gettext("Install now anyway? The sheet that is printing may not come out whole.")
+            }
+          >
+            {gettext("Install anyway")}
+          </button>
           <button
             id="update-later"
             type="button"

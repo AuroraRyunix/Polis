@@ -1,0 +1,244 @@
+defmodule Polis.ReleaseFilesTest do
+  @moduledoc """
+  The files a release is made of and by, held to each other: the names the
+  workflow publishes are the names the program, the scripts and the README
+  ask for; every action is pinned to a commit; the changelog has something
+  to say about the version in `mix.exs`, or says it is unreleased.
+
+  None of this runs a workflow. It catches the kind of mistake that is one
+  renamed file in one of five places, which is the only kind a copy of
+  another program's release ever makes.
+  """
+
+  use ExUnit.Case, async: true
+
+  alias Polis.Updates
+
+  @root Path.expand("../..", __DIR__)
+
+  defp read(path), do: File.read!(Path.join(@root, path))
+
+  defp version, do: Mix.Project.config()[:version]
+
+  describe "the workflows" do
+    test "every action is pinned to a commit, with the version beside it" do
+      for file <- ~w(.github/workflows/ci.yml .github/workflows/release.yml),
+          [line] <- Regex.scan(~r/^.*\buses:.*$/m, read(file)) do
+        assert line =~ ~r/uses: [\w.-]+\/[\w.\/-]+@[0-9a-f]{40} # v\d+\.\d+\.\d+$/,
+               "#{file}: not pinned to a commit: #{String.trim(line)}"
+      end
+    end
+
+    test "only the job that publishes may write" do
+      workflow = read(".github/workflows/release.yml")
+      assert length(Regex.scan(~r/contents: write/, workflow)) == 1
+      assert workflow =~ ~r/^permissions:\n  contents: read$/m
+      refute read(".github/workflows/ci.yml") =~ "contents: write"
+    end
+
+    test "the files it publishes are the files that are asked for by name" do
+      workflow = read(".github/workflows/release.yml")
+      readme = read("README.md")
+
+      # What the program computes the size of...
+      assert Updates.asset_name(:velopack, "1.2.3") == "PolisApp-1.2.3-full.nupkg"
+      assert workflow =~ "PolisApp-${VERSION}-full.nupkg"
+
+      # ...what the Linux scripts download...
+      for script <- ~w(rel/linux/install.sh rel/linux/update.sh) do
+        assert read(script) =~ ~s(file="polis-linux-$cpu.tar.gz")
+        assert read(script) =~ "SHA256SUMS"
+      end
+
+      # ...and every fixed name, in the workflow and in the README.
+      for name <- ~w(Polis-Setup.exe polis-windows-x86_64-portable.zip
+                     polis-linux-x86_64.tar.gz polis-linux-aarch64.tar.gz install.sh
+                     polis-macos-aarch64.zip) do
+        assert workflow =~ name, "release.yml does not publish #{name}"
+        assert readme =~ "releases/latest/download/#{name}", "the README does not link #{name}"
+      end
+
+      for name <- ~w(update.sh uninstall.sh releases.win.json SHA256SUMS) do
+        assert workflow =~ name, "release.yml does not publish #{name}"
+      end
+
+      assert workflow =~ "AuroraRyunix/Polis" or workflow =~ "github.repository"
+    end
+
+    test "the Linux archives are built where a Raspberry Pi can run them" do
+      workflow = read(".github/workflows/release.yml")
+      assert workflow =~ "runner: ubuntu-22.04, target: linux-x86_64"
+      assert workflow =~ "runner: ubuntu-22.04-arm, target: linux-aarch64"
+      assert read("rel/linux/install.sh") =~ ~s([ "$minor" -lt 35 ])
+    end
+
+    test "the Mac app is built for Apple Silicon and macOS 11" do
+      workflow = read(".github/workflows/release.yml")
+      build_otp = read("rel/macos/build_otp.sh")
+      build_app = read("rel/macos/build_app.sh")
+
+      assert workflow =~ "runner: macos-15, target: macos-aarch64"
+      refute workflow =~ "macos-15-intel"
+      assert workflow =~ ~s(dist/polis-${{ matrix.target }}.zip)
+      assert workflow =~ "if: runner.os == 'macOS' && steps.apple.outputs.sign == 'true'"
+
+      assert workflow =~ "if: runner.os != 'macOS'"
+      assert workflow =~ ~s(sh rel/macos/build_otp.sh "$HOME/otp-macos")
+      assert workflow =~ ~s(echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> "$GITHUB_ENV")
+
+      for var <- ~w(OTP_VERSION OPENSSL_VERSION ELIXIR_VERSION) do
+        assert [_, version] = Regex.run(~r/^\s+#{var}: "([^"]+)"$/m, workflow)
+
+        assert build_otp =~
+                 ~r/^\s+#{Regex.escape(version)}(-otp-\d+)?\) \w+_sha256=[0-9a-f]{64} ;;$/m,
+               "build_otp.sh has no checksum for #{var} #{version}"
+      end
+
+      assert build_app =~ "supported=11.0"
+      assert build_app =~ "-target arm64-apple-macos11"
+    end
+
+    test "the release is started and asked for its manual, as the help page says it is" do
+      workflow = read(".github/workflows/release.yml")
+      assert workflow =~ ~s(id="manual")
+      assert workflow =~ "state.json"
+    end
+  end
+
+  describe "the changelog" do
+    test "has a section for this version, or says it is unreleased" do
+      changelog = read("CHANGELOG.md")
+
+      assert changelog =~ "\n## [#{version()}]" or changelog =~ "\n## [Unreleased]",
+             "CHANGELOG.md says nothing about #{version()}"
+    end
+
+    @tag :tmp_dir
+    test "release_notes.sh prints one version's section and nothing else", %{tmp_dir: dir} do
+      if sh = System.find_executable("sh") do
+        file = Path.join(dir, "CHANGELOG.md")
+
+        File.write!(file, """
+        # Changelog
+
+        ## [Unreleased]
+
+        - [Feature] not yet
+
+        ## [0.2.0] - 2026-11-03
+
+        - [Feature] **The second.** With a `## [` in the middle of a line.
+        - [Fix] And a fix.
+
+        ## [0.1.0] - 2026-10-20
+
+        - [Feature] The first.
+        """)
+
+        script = Path.join(@root, "tools/release_notes.sh")
+
+        assert {notes, 0} = System.cmd(sh, [script, "0.2.0", file])
+        assert notes =~ "**The second.**"
+        refute notes =~ "The first."
+        refute notes =~ "not yet"
+
+        assert {"", 1} = System.cmd(sh, [script, "0.3.0", file])
+      end
+    end
+  end
+
+  describe "the release" do
+    test "is one release, with the files each system needs beside bin/" do
+      release = Mix.Project.config()[:releases][:polis]
+      assert release[:applications] == [polis: :permanent]
+
+      for name <- ~w(polis.sh install.sh update.sh uninstall.sh polis.service
+                     polis-update.service polis-update.path) do
+        assert File.exists?(Path.join([@root, "rel/linux", name])), "rel/linux/#{name} is missing"
+      end
+
+      for name <- ~w(Polis.bat launcher.c launcher.rc launcher.manifest Polis.ico
+                     build_launcher.ps1 build_installer.ps1 build_icon.py) do
+        assert File.exists?(Path.join([@root, "rel/windows", name])),
+               "rel/windows/#{name} is missing"
+      end
+
+      for name <- ~w(Launcher.swift launcher.sh build_app.sh build_otp.sh sign_and_notarize.sh
+                     Info.plist entitlements.plist Polis-icon.png) do
+        assert File.exists?(Path.join([@root, "rel/macos", name])), "rel/macos/#{name} is missing"
+      end
+
+      plist = read("rel/macos/Info.plist")
+      assert plist =~ "<string>__VERSION__</string>"
+      assert plist =~ ~r{<key>CFBundleExecutable</key>\s*<string>Polis</string>}
+      refute plist =~ "LSUIElement"
+
+      build = read("rel/macos/build_app.sh")
+      assert build =~ ~s(-o "$app/Contents/MacOS/Polis" "$swift_source")
+      assert build =~ ~s(cp "$here/launcher.sh" "$app/Contents/Resources/launcher.sh")
+      assert build =~ "logo=rel/macos/Polis-icon.png"
+    end
+
+    test "the Mac launcher knows this program and no other" do
+      swift = read("rel/macos/Launcher.swift")
+      assert swift =~ ~s(let defaultDataFolder = "Library/Application Support/PolisData")
+      assert swift =~ ~s(let dataEnv = "POLIS_DATA")
+      assert swift =~ ~s(let releaseInResources = "app/bin/polis")
+      assert swift =~ ~s(let probePath = "/help")
+      assert swift =~ "let defaultPort = 4061"
+      assert swift =~ "let askBeforeStopping = true"
+    end
+
+    test "the icons are made from the mark, at the sizes their systems want" do
+      png = File.read!(Path.join(@root, "rel/macos/Polis-icon.png"))
+      assert <<0x89, "PNG", _::binary-size(12), width::32, height::32, _::binary>> = png
+      assert {width, height} == {1024, 1024}
+
+      assert <<0, 0, 1, 0, count::little-16, _::binary>> =
+               File.read!(Path.join(@root, "rel/windows/Polis.ico"))
+
+      assert count >= 4
+
+      # The page's mark is the brand's, accent and all.
+      assert read("priv/logo/mark.svg") =~ "var(--accent,#1f4f8a)"
+      assert read("rel/windows/build_icon.py") =~ "priv/logo/mark.svg"
+    end
+
+    test "the launcher and the program agree on the code and the port" do
+      launcher = read("rel/windows/launcher.c")
+      assert launcher =~ "#define POLIS_UPDATE_EXIT_CODE #{Updates.update_exit_code()}\n"
+      assert launcher =~ "#define DEFAULT_PORT 4061\n"
+      assert read("rel/macos/launcher.sh") =~ "PORT=${PORT:-4061}"
+      assert read("config/runtime.exs") =~ ~s[System.get_env("PORT", "4061")]
+    end
+
+    test "the unit runs the program as its own user, read-only but for the data" do
+      unit = read("rel/linux/polis.service")
+
+      for line <-
+            [
+              "User=polis",
+              "NoNewPrivileges=yes",
+              "ProtectSystem=strict",
+              "Restart=on-failure",
+              "Environment=PORT=4061",
+              "Environment=RELEASE_DISTRIBUTION=none",
+              "Environment=POLIS_UPDATER=systemd",
+              "ExecStart=/opt/polis/current/bin/polis start"
+            ] ++ [] do
+        assert unit =~ ~r/^#{Regex.escape(line)}$/m, "polis.service lacks: #{line}"
+      end
+
+      refute unit =~ ~r/^User=root$/m
+    end
+
+    test "the shell scripts have Unix line endings" do
+      for file <-
+            Path.wildcard(Path.join(@root, "rel/linux/*")) ++
+              Path.wildcard(Path.join(@root, "rel/macos/*.sh")) ++
+              [Path.join(@root, "tools/release_notes.sh"), Path.join(@root, "rel/env.sh.eex")] do
+        refute File.read!(file) =~ "\r", "#{file} has CRLF line endings"
+      end
+    end
+  end
+end
