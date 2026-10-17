@@ -1,0 +1,57 @@
+# Polis as a service: starts with the box, starts again when it falls over.
+# Installed by install.sh; kept current by update.sh. Settings an arbiter may
+# want to change are in /etc/polis/polis.env, not here - this file is
+# replaced by updates.
+
+[Unit]
+Description=Polis - the print station of a chess hall
+Documentation=https://github.com/AuroraRyunix/Polis
+After=network.target
+
+[Service]
+Type=exec
+User=polis
+Group=polis
+WorkingDirectory=/var/lib/polis
+
+Environment=HOME=/var/lib/polis
+Environment=LANG=C.UTF-8
+Environment=POLIS_DATA=/var/lib/polis
+Environment=PORT=4061
+# No Erlang distribution: no epmd, no node listening on the hall's network.
+Environment=RELEASE_DISTRIBUTION=none
+# The release writes its start-up configuration somewhere; /opt is not
+# writable for this user, and should not be.
+Environment=RELEASE_TMP=/run/polis
+RuntimeDirectory=polis
+# Tells the program that "Download and install" has somebody to ask
+# (polis-update.path), and where that somebody leaves its answer.
+Environment=POLIS_UPDATER=systemd
+Environment=POLIS_UPDATE_STATUS=/var/lib/polis-update/status
+EnvironmentFile=-/etc/polis/polis.env
+
+ExecStart=/opt/polis/current/bin/polis start
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+
+# Not root, and not able to become it. The whole system read-only except the
+# data directory. No home directories, a /tmp of its own.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/polis
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+# Printing goes through CUPS's own socket (AF_UNIX above, /run/cups is not
+# written to): `lp` hands the PDF over and CUPS, running as itself, talks to
+# the printer. Deliberately absent: MemoryDenyWriteExecute (the runtime
+# compiles code as it goes).
+
+[Install]
+WantedBy=multi-user.target

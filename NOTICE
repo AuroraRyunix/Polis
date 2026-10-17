@@ -1,0 +1,51 @@
+Polis
+Copyright 2026 Jorian Burssens
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes the following, which keep their own notices:
+
+1. The character widths of Helvetica and Helvetica-Bold
+
+   lib/polis/layout/metrics.ex holds the advance widths of the 224
+   WinAnsiEncoding characters of the two fonts, as published in Adobe's
+   Core 14 AFM files (Helvetica.afm, Helvetica-Bold.afm):
+
+     Copyright (c) 1985, 1987, 1989, 1990, 1997 Adobe Systems Incorporated.
+     All Rights Reserved. Helvetica is a trademark of Linotype-Hell AG
+     and/or its subsidiaries.
+
+   Adobe's terms for those files allow them to be used, copied and
+   distributed for any purpose and without charge, with or without
+   modification, provided the copyright notices are retained; they are,
+   above and in that file. No font is included: a PDF that names one of
+   the fourteen standard fonts is drawn with the reader's own copy.
+
+2. The shipping: launchers, installers and scripts
+
+   rel/, .github/workflows/ and lib/polis/{updates,data_home,autostart,
+   launcher_details}* came from Alnasl (https://github.com/AuroraRyunix/Alnasl),
+   by the same author and under the same licence; the join and the link
+   (lib/polis/join.ex, lib/polis/link.ex) came from Arkab
+   (https://github.com/AuroraRyunix/Arkab), likewise. Changes: the names,
+   and what the program does.
+
+3. What the Windows downloads carry besides Polis
+
+   None of this is in the repository; the release workflow puts it in the
+   installer and the zip.
+
+   - Erlang/OTP's runtime (Apache-2.0) and the compiled dependencies listed
+     in mix.lock, each under its own licence.
+   - Velopack (https://github.com/velopack/velopack), MIT licence,
+     Copyright (c) Velopack Ltd. and contributors: the installer and
+     updater (Setup.exe, Update.exe, the stub beside them) and
+     velopack_libc.dll, which the launcher loads to apply an update.
+     rel/windows/launcher.c declares the part of its C interface it calls.
+   - Microsoft's Visual C++ runtime (vcruntime140.dll, vcruntime140_1.dll,
+     msvcp140.dll), which Erlang's Windows build needs, redistributed
+     unchanged beside it as Microsoft's terms for those files allow.
+
+On Windows, Polis prints through Windows' own printing (System.Drawing, run
+by the Windows PowerShell every Windows 10 and 11 has) and the printer's own
+driver; on macOS and Linux through CUPS. Neither is included.

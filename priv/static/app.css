@@ -1,0 +1,61 @@
+:root { --bg: #f5f6f8; --fg: #1b2230; --muted: #5d6475; --line: #d6d9e0; --ok: #1f8a4c; --bad: #c0392b; --warn: #a86400; --card: #fff; --accent: #1f4f8a; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #13161c; --fg: #e7e8ec; --muted: #a2a8b6; --line: #2c303a; --card: #1b1f27; --ok: #3fbf72; --bad: #e5675a; --warn: #e0a64a; --accent: #8fb8ec; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+main { max-width: 48rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { margin: 0; font-size: 1.6rem; }
+h1 .logo { width: 1.5rem; height: 1.5rem; vertical-align: -.2rem; margin-right: .2rem; }
+h1 .name { color: var(--muted); font-weight: 400; font-size: 1.1rem; margin-left: .4rem; }
+h2 { font-size: 1.1rem; margin: 0 0 .6rem; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+ul { list-style: none; margin: 0; padding: 0; }
+li { padding: .35rem 0; }
+li + li { border-top: 1px solid var(--line); }
+.row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.row button { margin-left: auto; }
+.note { color: var(--muted); font-size: .9rem; }
+.mono { font-family: ui-monospace, monospace; }
+.dot { width: .75rem; height: .75rem; border-radius: 50%; display: inline-block; transition: background .3s ease; }
+.dot.up { background: var(--ok); }
+.dot.down { background: var(--bad); }
+form { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+label { display: inline-flex; gap: .4rem; align-items: center; }
+input[type=text] { flex: 1 1 16rem; min-height: 44px; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; transition: border-color .15s ease; }
+input[type=text]:focus, select:focus { outline: none; border-color: var(--accent); }
+input[type=checkbox] { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+select { min-height: 40px; padding: .3rem .5rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+button { min-height: 40px; padding: .4rem 1rem; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); color: #fff; font: inherit; cursor: pointer; transition: transform .08s ease, opacity .15s ease; }
+@media (prefers-color-scheme: dark) { button { color: #13161c; } }
+button:hover { opacity: .85; }
+button:active { transform: scale(.97); }
+button[disabled] { opacity: .45; cursor: not-allowed; }
+button.danger, .actions button, #refresh-printers, #update-later, #check-now { background: transparent; color: var(--fg); border-color: var(--line); }
+button.danger { color: var(--bad); border-color: var(--bad); min-height: 34px; }
+.switches { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .3rem; }
+.buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0 0; }
+.job { display: grid; grid-template-columns: 3.2rem 1fr auto; gap: .2rem .6rem; align-items: center; }
+.job .status { grid-column: 2; font-size: .9rem; color: var(--muted); }
+.job.printing .status { color: var(--accent); }
+.job.printed .status { color: var(--ok); }
+.job.waiting_printer .status { color: var(--warn); }
+.job .actions { grid-column: 3; grid-row: 1 / span 2; display: flex; gap: .5rem; align-items: center; }
+.job .actions a { color: var(--fg); font-size: .9rem; }
+.job .actions button { min-height: 34px; padding: .2rem .7rem; }
+.ok { color: var(--ok); }
+.error { color: var(--bad) !important; }
+.warn { color: var(--warn); display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .3rem 0; }
+.warn button { min-height: 34px; padding: .2rem .8rem; }
+.flash { padding: .6rem .8rem; border-radius: 8px; border: 1px solid currentColor; cursor: pointer; }
+ol { padding-left: 1.3rem; margin: .4rem 0 .8rem; }
+section p { margin: 0 0 .6rem; }
+section ol > li, ul.prose > li { padding: .2rem 0; border: 0; }
+ul.prose { list-style: disc; padding-left: 1.3rem; margin: 0 0 .6rem; }
+.foot { margin-top: 1.5rem; display: flex; gap: .7rem; align-items: center; font-size: .9rem; }
+.foot a { color: var(--fg); }
+.foot a[aria-current=true] { font-weight: 700; text-decoration: none; }
+@media (max-width: 34rem) {
+  .job { grid-template-columns: 1fr; }
+  .job .status, .job .actions { grid-column: 1; grid-row: auto; }
+}
