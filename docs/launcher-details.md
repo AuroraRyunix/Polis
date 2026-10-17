@@ -45,14 +45,15 @@ mode `0600` in a `0700` directory on Linux and macOS (on Windows the profile
 folder's own rights apply), written empty-then-chmod-then-filled so the secret
 is never in a readable file, and deleted on a clean stop. A crash leaves it;
 the next start overwrites it, and an old secret opens nothing. `<data>` is the
-folder holding `polis.db`.
+folder holding `state.json`.
 
 ## The answer
 
 `200`, `application/json`, `cache-control: no-store`. `?lang=nl` words the
-`summary` in Dutch; anything else is English. Typical cost is a millisecond or
-two: nothing reads a table except `count(*)` on tournaments, boards and the
-pending part of the outbox.
+`summary` in Dutch; anything else is English. Typical cost is well under a
+millisecond: the queue and the tournaments are already in memory, each line
+is asked for its state once, and no printer is asked anything (a printer
+that takes ten seconds to admit it is asleep would hold the panel up).
 
 ```json
 {
@@ -64,15 +65,14 @@ pending part of the outbox.
              "cores": 8, "otp": "29", "elixir": "1.20.3", "load_average": null},
   "beam": {"memory_bytes": {"total": 0, "processes": 0, "ets": 0, "binary": 0, "code": 0},
            "processes": 420, "schedulers": 8, "run_queue": 0, "cpu_percent": 0.8},
-  "database": {"path": "C:\\Users\\...\\PolisData\\polis.db", "size_bytes": 4096000,
-               "wal_bytes": 41232, "ping_ms": 0.12,
-               "slow_queries": [], "slow_threshold_ms": 100},
   "log": {"source": "file", "path": "C:\\Users\\...\\PolisData\\launcher.log"},
-  "polis": {"live_views": 2, "tournaments": 1, "boards": 8, "boards_connected": 8,
-             "buses_open": 1, "outbox_pending": 0, "relay": "connected"},
+  "polis": {"live_views": 1, "jobs_queued": 0, "printer": "Hall printer",
+            "tournaments": 2, "links_up": 2},
   "summary": [
     {"label": "Version", "value": "Polis 0.1.4"},
-    {"label": "Boards connected", "value": "8 of 8"}
+    {"label": "Lines up", "value": "2 of 2"},
+    {"label": "Printer", "value": "Hall printer"},
+    {"label": "Jobs not printed yet", "value": "0"}
   ]
 }
 ```
@@ -82,16 +82,14 @@ pending part of the outbox.
 | `uptime_s`, `started_at` | since the runtime started |
 | `system.load_average` | Linux only (`/proc/loadavg`), `null` elsewhere |
 | `beam.cpu_percent` | scheduler utilisation since the previous request; `null` on the first request of a start |
-| `database.ping_ms` | a `SELECT 1` through the pool; `null` if it failed |
-| `database.slow_queries` | the last five queries of 100 ms or more since the start, newest first; the query text cut at 160 characters (placeholders, never the values) |
 | `log.source` | `file` (a launcher's `launcher.log`), `journald` (with `unit`, under systemd) or `stdout` (a terminal) |
-| `polis.boards` | boards set up; `boards_connected` those with a running process and driver |
-| `polis.buses_open` | serial buses open (one per port). Counted from the registry: **no port is opened or touched to answer this** |
-| `polis.outbox_pending` | messages for the results site not sent yet |
-| `polis.relay` | `unconfigured`, `disabled`, `idle`, `connected`, `offline` or `blocked`. No address and no error text: those can name the arbiter's server, and the panel gets pasted into mails |
+| `polis.jobs_queued` | jobs not printed yet: waiting for a printer, queued or printing |
+| `polis.printer` | the chosen printer's name, or `null` while none is chosen |
+| `polis.tournaments` | tournaments joined; `links_up` those whose line is up now. No server address and no error text: those can name the arbiter's server, and the panel gets pasted into mails |
+| `polis.live_views` | pages open |
 | `summary` | the same numbers as label/value lines in words and units, in a fixed order (`Polis.LauncherDetails.Stats.labels/1`) |
 
-No token, no key, no player or game data is in the answer. Fields are added,
+No token, no key, no player name and no tournament name is in the answer. Fields are added,
 not renamed; a reader ignores what it does not know.
 
 ## Showing it

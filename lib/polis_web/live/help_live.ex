@@ -34,7 +34,7 @@ defmodule PolisWeb.HelpLive do
           <h2>Aansluiten bij een toernooi</h2>
           <ol>
             <li>
-              Open in OpenPairings de pagina Zaal van het toernooi en druk op "Een printstation toevoegen". Er verschijnt een link, goed voor één station en vijftien minuten.
+              Open in OpenPairings de pagina Printstation van het toernooi en druk op "Printstation toevoegen". Er verschijnt een link, goed voor één station en vijftien minuten.
             </li>
             <li>Plak de link in het veld "Aansluiten bij een toernooi" op deze pagina.</li>
             <li>
@@ -66,7 +66,7 @@ defmodule PolisWeb.HelpLive do
               Een ronde die de arbiter na het afdrukken nog wijzigt: niets vanzelf. Er komt "gewijzigd sinds het afgedrukt is" bij het toernooi te staan, met een knop "Opnieuw afdrukken". Een blad aan de muur dat vanzelf verandert, is erger dan een blad dat oud is.
             </li>
             <li>
-              "Opnieuw afdrukken" in OpenPairings: wat het noemt, meteen.
+              "Ronde opnieuw printen" in OpenPairings: wat het noemt, meteen.
             </li>
           </ul>
           <p>
@@ -118,7 +118,7 @@ defmodule PolisWeb.HelpLive do
           <h2>Joining a tournament</h2>
           <ol>
             <li>
-              In OpenPairings, open the tournament's Hall page and press "Add a print station". A link appears, good for one station and fifteen minutes.
+              In OpenPairings, open the tournament's Print station page and press "Add a print station". A link appears, good for one station and fifteen minutes.
             </li>
             <li>Paste the link into the "Join a tournament" field on this page.</li>
             <li>
@@ -150,7 +150,7 @@ defmodule PolisWeb.HelpLive do
               A round the arbiter changes after it was printed: nothing by itself. The tournament shows "changed since it was printed", with a Reprint button. A sheet on the wall that changes by itself is worse than one that is old.
             </li>
             <li>
-              "Print again" in OpenPairings: what it names, at once.
+              "Print round N again" in OpenPairings: what it names, at once.
             </li>
           </ul>
           <p>

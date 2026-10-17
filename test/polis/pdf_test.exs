@@ -68,15 +68,15 @@ defmodule Polis.PdfTest do
   describe "WinAnsi" do
     test "Latin letters with accents are one byte each, as WinAnsi has them" do
       assert WinAnsi.encode("Café") == <<"Caf", 0xE9>>
-      assert WinAnsi.encode("Šarić") == <<0x8A, "ari", ?c>>
-      assert WinAnsi.encode("Žemaitė") == <<0x8E, "emait", ?e>>
-      assert WinAnsi.encode("Müller-Øst") == <<"M", 0xFC, "ller-", 0xD8, "st">>
+      assert WinAnsi.encode("Šibenik") == <<0x8A, "ibenik">>
+      assert WinAnsi.encode("Žemaitija") == <<0x8E, "emaitija">>
+      assert WinAnsi.encode("Mühle-Øst") == <<"M", 0xFC, "hle-", 0xD8, "st">>
     end
 
     test "what WinAnsi lacks is transliterated, and the rest is a question mark" do
-      assert WinAnsi.encode("Łukasz Wąs") == "Lukasz Was"
-      assert WinAnsi.encode("Đorđe") == "Dorde"
-      assert WinAnsi.encode("Иван") == "????"
+      assert WinAnsi.encode("Łask Wąchock") == "Lask Wachock"
+      assert WinAnsi.encode("Đakovo") == "Dakovo"
+      assert WinAnsi.encode("Город") == "?????"
       # Decomposed input is taken as composed.
       assert WinAnsi.encode("Café") == <<"Caf", 0xE9>>
     end

@@ -446,7 +446,7 @@ defmodule PolisWeb.StationLive do
         <p :if={@message} id="join-message" class={elem(@message, 0)}>{elem(@message, 1)}</p>
         <p class="note">
           {gettext(
-            "In OpenPairings: the tournament's Hall page, Add a print station. Paste the link it shows; that is all."
+            "In OpenPairings: the tournament's Print station page, Add a print station. Paste the link it shows; that is all."
           )}
         </p>
       </section>

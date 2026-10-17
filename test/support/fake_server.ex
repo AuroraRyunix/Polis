@@ -93,19 +93,19 @@ defmodule Polis.FakeServer do
       "boards" => [
         %{
           "board" => "1",
-          "white" => player("Ann Alpha", 2210, "1.5"),
-          "black" => player("Bert Beta", 2105, "1"),
+          "white" => player("Player One", 2210, "1.5"),
+          "black" => player("Player Two", 2105, "1"),
           "bye" => nil
         },
         %{
           "board" => "2",
-          "white" => player("Cora Gamma", 1980, "1"),
-          "black" => player("Dirk Delta", 1890, "1"),
+          "white" => player("Player Three", 1980, "1"),
+          "black" => player("Player Four", 1890, "1"),
           "bye" => nil
         },
         %{
           "board" => "3",
-          "white" => player("Eva Epsilon", 1700, "0.5"),
+          "white" => player("Player Five", 1700, "0.5"),
           "black" => nil,
           "bye" => "bye"
         }

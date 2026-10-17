@@ -6,7 +6,7 @@ defmodule Polis.FakeServer.Socket do
 
   def init(agent) do
     me = self()
-    Agent.update(agent, &%{&1 | sockets: [me | &1.sockets]})
+    update(agent, &%{&1 | sockets: [me | &1.sockets]})
     {:ok, %{agent: agent, hello?: false}}
   end
 
@@ -52,22 +52,30 @@ defmodule Polis.FakeServer.Socket do
   end
 
   defp handle(%{"type" => "status"} = frame, %{hello?: true} = state) do
-    Agent.update(state.agent, &%{&1 | statuses: [Map.delete(frame, "type") | &1.statuses]})
+    update(state.agent, &%{&1 | statuses: [Map.delete(frame, "type") | &1.statuses]})
     {:ok, state}
   end
 
   defp handle(%{"type" => "leave"}, state) do
-    Agent.update(state.agent, &%{&1 | left?: true})
+    update(state.agent, &%{&1 | left?: true})
     {:ok, state}
   end
 
   defp handle(_frame, state), do: {:ok, state}
 
+  # The test that started the server may be gone while a line it opened is
+  # still saying something; that is not this test's failure.
+  defp update(agent, fun) do
+    Agent.update(agent, fun)
+  catch
+    :exit, _reason -> :ok
+  end
+
   defp refused(reason), do: Jason.encode!(%{"type" => "refused", "reason" => reason})
 
   def terminate(_reason, state) do
     me = self()
-    Agent.update(state.agent, &%{&1 | sockets: List.delete(&1.sockets, me)})
+    update(state.agent, &%{&1 | sockets: List.delete(&1.sockets, me)})
     :ok
   catch
     :exit, _reason -> :ok

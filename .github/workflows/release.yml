@@ -243,7 +243,7 @@ jobs:
           set -euo pipefail
           export POLIS_DATA="$RUNNER_TEMP/polis-data"
           export RELEASE_TMP="$RUNNER_TEMP/polis-tmp"
-          export PORT=4046
+          export PORT=4166
           mkdir -p "$RELEASE_TMP"
           rel=_build/prod/rel/polis
 
@@ -292,7 +292,7 @@ jobs:
         run: |
           $env:POLIS_DATA = Join-Path $env:RUNNER_TEMP "polis-data"
           $env:RELEASE_TMP = Join-Path $env:RUNNER_TEMP "polis-tmp"
-          $env:PORT = "4046"
+          $env:PORT = "4166"
           New-Item -ItemType Directory -Force -Path $env:RELEASE_TMP | Out-Null
           $rel = "_build\prod\rel\polis"
           $log = Join-Path $env:RUNNER_TEMP "polis.log"
@@ -308,7 +308,7 @@ jobs:
           $body = $null
           foreach ($i in 1..60) {
             try {
-              $body = (Invoke-WebRequest -Uri "http://127.0.0.1:4046/help" -TimeoutSec 5 -UseBasicParsing).Content
+              $body = (Invoke-WebRequest -Uri "http://127.0.0.1:4166/help" -TimeoutSec 5 -UseBasicParsing).Content
               break
             } catch {
               if ($proc.HasExited) { break }
@@ -317,7 +317,7 @@ jobs:
           }
 
           $epmd = Get-NetTCPConnection -State Listen -LocalPort 4369 -ErrorAction SilentlyContinue
-          $wide = Get-NetTCPConnection -State Listen -LocalPort 4046 -ErrorAction SilentlyContinue |
+          $wide = Get-NetTCPConnection -State Listen -LocalPort 4166 -ErrorAction SilentlyContinue |
             Where-Object { $_.LocalAddress -ne "127.0.0.1" }
 
           & taskkill /T /F /PID $proc.Id | Out-Null
@@ -486,7 +486,7 @@ jobs:
           chmod -R a-w "$app"
 
           export POLIS_DATA="$RUNNER_TEMP/polis-app-data"
-          export PORT=4046
+          export PORT=4166
 
           status=0
           fail() { echo "::error::$1"; status=1; }

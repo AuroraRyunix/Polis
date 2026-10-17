@@ -28,6 +28,11 @@ defmodule Polis.StationCase do
     for {_, pid, _, _} <- DynamicSupervisor.which_children(Polis.Links),
         do: DynamicSupervisor.terminate_child(Polis.Links, pid)
 
+    # A print from the test before, still under way, would write into the
+    # folder while it goes.
+    for pid <- Task.Supervisor.children(Polis.TaskSupervisor),
+        do: Task.Supervisor.terminate_child(Polis.TaskSupervisor, pid)
+
     :ok = Supervisor.terminate_child(Polis.Supervisor, Polis.Queue)
     :ok = Supervisor.terminate_child(Polis.Supervisor, Polis.State)
 

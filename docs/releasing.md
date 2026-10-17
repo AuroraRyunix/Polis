@@ -23,8 +23,8 @@ A version without notes publishes nothing (the run says so in a notice and
 stays green); so does a push that changes neither. That second condition is
 the one difference from OpenPairings, where the version alone decides, and
 it is there for one reason: **`main` says 0.1.0 today and no release
-exists**, so without it, merging the installer work would have published
-0.1.0 on the spot.
+exists**, so without it the first push would have published 0.1.0 on the
+spot.
 
 Do not tag by hand. If you do, the tag must be `v` + the version in
 `mix.exs`, or the workflow refuses.
@@ -64,6 +64,7 @@ find them stays on its version for ever without saying why.
 | `config/runtime.exs`, `lib/polis/data_home.ex` | where an installed copy keeps its data, and the refusal to keep it anywhere an installer owns |
 | `rel/env.sh.eex`, `rel/env.bat.eex` | Erlang distribution off by default |
 | `rel/windows/launcher.c` | `Polis.exe`: starts the release, opens the browser, is the stop button, applies an update |
+| `priv/print/print.ps1` | the Windows road to a printer; CI parses it with Windows PowerShell, nothing runs it there |
 | `rel/windows/build_launcher.ps1` | compiles it with `zig cc` (run by `mix release`) |
 | `rel/windows/build_installer.ps1` | `vpk pack`, with the checks that keep data out of harm's way |
 | `rel/windows/build_icon.py` | draws `Polis.ico` from the mark; run by hand when the mark changes |
@@ -71,7 +72,7 @@ find them stays on its version for ever without saying why.
 | `rel/linux/polis.service`, `polis-update.path`, `polis-update.service` | the service, and the root-owned updater a page can ask but not command |
 | `rel/macos/build_app.sh`, `launcher.sh`, `Info.plist` | `Polis.app` around the release: its launcher (status window, Stop), the checks that it links nothing but the system |
 | `rel/macos/sign_and_notarize.sh`, `entitlements.plist` | Developer ID signing and notarisation, once the Apple account exists (below) |
-| `lib/polis/updates.ex`, `updates/checker.ex` | the check, the notice, the refusal under a game, the hand-over |
+| `lib/polis/updates.ex`, `updates/checker.ex` | the check, the notice, the refusal while a sheet prints, the hand-over |
 | `tools/release_notes.sh` | the changelog section of one version |
 
 ## Signing the Mac app
@@ -93,8 +94,7 @@ add these repository secrets and nothing else changes:
 | `APPLE_APP_PASSWORD` | an app-specific password for that Apple ID |
 
 `rel/macos/sign_and_notarize.sh` then signs every binary with the hardened
-runtime and the BEAM's entitlements (JIT, `dlopen` of the SQLite library),
-notarises, staples, and asks Gatekeeper before the zip is made. The same
+runtime and the BEAM's entitlements (JIT), notarises, staples, and asks Gatekeeper before the zip is made. The same
 five secrets, under the same names, sign OpenPairings.app. The first signed
 build needs a Mac test of its own.
 
@@ -110,17 +110,14 @@ set MIX_ENV=prod
 set POLIS_DATA=%CD%\tmp\release-data
 mix deps.get --only prod
 mix compile
-mix assets.deploy
 mix release polis --overwrite
 .\rel\windows\build_installer.ps1 -PayloadDir _build\prod\rel\polis -OutputDir installer_out
-mix phx.digest.clean --all
 ```
 
-`set POLIS_UART=1` before `deps.get` to have the serial library in it -
-from a checkout whose path has no space (README, "Serial ports"). Without
-it the release is whole and cannot open a real board.
+There is no asset build: the page's CSS and script are in `priv/static`
+as written, and Phoenix's own scripts come from their packages.
 
-Linux: the same four `mix` lines, then
+Linux: the same three `mix` lines, then
 `tar -czf polis-linux-$(uname -m).tar.gz -C _build/prod/rel polis`. Built
 on your machine it runs on your machine's glibc or newer; the workflow
 builds on Ubuntu 22.04 for a reason.
@@ -137,15 +134,14 @@ what holds.
 
 **The workflow**
 
-- [x] `ci.yml` and `release.yml` parse and run at all (0.1.0, 2026-10-12).
-- [x] `erlef/setup-beam` has OTP 29.0.5 for `ubuntu-22.04` and
-      `ubuntu-22.04-arm`.
-- [x] `circuits_uart` builds on `windows-latest` with the image's own
-      `gcc` and `mingw32-make`.
+- [ ] `ci.yml` and `release.yml` parse and run at all. (They are
+      Alnasl's, which do, with the serial parts taken out and the print
+      script put in.)
+- [ ] `print.ps1` parses under Windows PowerShell 5.1 on `windows-latest`.
 - [ ] `shellcheck --severity=warning` passes on `rel/linux/*.sh` (it was
       not available where they were written; they pass `sh -n`).
-- [ ] The smoke tests pass on all three targets, including "the serial
-      library loads" and "nothing listens but 127.0.0.1:4046".
+- [ ] The smoke tests pass on all three targets, including "the release
+      writes a PDF" and "nothing listens but 127.0.0.1:4166".
 - [ ] A push with a version and no changelog section publishes nothing; a
       push with both publishes once; the next push publishes nothing.
 - [ ] The release notes are the changelog section.
@@ -158,16 +154,20 @@ what holds.
       answers, a second double-click opens a tab instead of a second server.
 - [ ] Closing the window asks, and stops the program; no `erl.exe` is left.
 - [ ] The data is in `%LOCALAPPDATA%\PolisData`, and **is still there
-      after uninstalling**. This is the one that matters. Put a game in it
-      first.
+      after uninstalling**. This is the one that matters. Join a
+      tournament first.
 - [ ] Installing again finds the data.
 - [ ] A PC that never had Erlang or the Visual C++ runtime starts it (the
       three DLLs beside `erl.exe` are there for this).
-- [ ] A real electronic board on a COM port is read by the installed copy.
+- [ ] The printer list shows the PC's printers; "Test print" on a real
+      printer prints the frame whole, on A4 and on Letter; a round with an
+      accented and a Cyrillic name prints both as they are.
+- [ ] The place cards fold into tents that read the right way up on both
+      sides.
 - [ ] From the second release on: the notice appears, "Download and
       install" stops the program, the launcher downloads and applies, the
       new version starts. Then the unhappy ways: no network at that moment
-      (the old version must come back), and a game in progress (must
+      (the old version must come back), and a sheet printing (must
       refuse).
 - [ ] SmartScreen says what the README says it says.
 - [ ] Symantec and Defender leave `Setup.exe`, the portable zip and the
@@ -181,11 +181,11 @@ what holds.
 - [ ] `install.sh` on Debian 12, Ubuntu 22.04 and Raspberry Pi OS Bookworm
       64-bit: user, group, directories, units, service up.
 - [ ] The hardened unit starts at all (`ProtectSystem=strict`,
-      `RELEASE_TMP=/run/polis`, `RestrictAddressFamilies`), and can open
-      `/dev/ttyUSB0` as `polis` in `dialout`.
+      `RELEASE_TMP=/run/polis`, `RestrictAddressFamilies`), and `lp` from
+      inside it reaches CUPS (the socket in `/run/cups`).
 - [ ] `update.sh` to a newer release: download, checksum, switch, restart,
       answer. And to a release that does not start: the old one is back.
-- [ ] "Download and install" on the Setup page: the request file appears,
+- [ ] "Download and install" on the page: the request file appears,
       `polis-update.path` fires, the page comes back on the new version.
 - [ ] `uninstall.sh` removes the program and **leaves `/var/lib/polis`**.
 - [ ] Offline install from an unpacked archive.
@@ -199,12 +199,13 @@ what holds.
       window, opens the browser; Stop asks and stops; no `beam` is left.
 - [ ] The data is in `~/Library/Application Support/PolisData`, and is
       still there after the app is binned.
-- [ ] A real electronic board on a USB adapter shows up as `/dev/cu.*` and is read.
+- [ ] The Mac's printers are listed (CUPS is part of macOS) and a test
+      page prints.
 
 ## Version numbers
 
 `0.1.0` is in `mix.exs` and has never been released, so the first release
 can simply be `0.1.0`: no bump, only the changelog heading. From then on:
 patch for fixes, minor for anything an arbiter would notice, and 1.0.0 the
-day a whole tournament has been played on real boards through an installed
-copy.
+day a whole tournament has had its pairings printed by an installed copy
+without anybody touching it.

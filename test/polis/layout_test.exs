@@ -36,7 +36,7 @@ defmodule Polis.LayoutTest do
       assert "Club Open" in t
       assert "Pairings - round 3 of 7" in t
       for title <- ~w(Board White Rtg Pts Black), do: assert(title in t)
-      assert "Ann Alpha" in t and "Bert Beta" in t
+      assert "Player One" in t and "Player Two" in t
       assert "Page 1 of 1" in t
     end
 
@@ -77,7 +77,7 @@ defmodule Polis.LayoutTest do
     test "a bye is a row with a bye where the opponent would be" do
       [page] = Layout.pairings(FakeServer.payload(3)).pages
       t = texts(page)
-      assert "Eva Epsilon" in t
+      assert "Player Five" in t
       assert "- bye -" in t
     end
 
@@ -95,14 +95,14 @@ defmodule Polis.LayoutTest do
     end
 
     test "a long name is shrunk, then cut with an ellipsis, and never wider than its column" do
-      long = String.duplicate("Bartholomew-Maximilian ", 6) |> String.trim()
+      long = String.duplicate("Longname-Longername ", 7) |> String.trim()
 
       payload =
         put_in(FakeServer.payload(1), ["boards"], [
           %{
             "board" => "1",
             "white" => %{"name" => long, "rating" => 2000},
-            "black" => %{"name" => "Short", "rating" => 2000},
+            "black" => %{"name" => "Shorty", "rating" => 2000},
             "bye" => nil
           }
         ])
@@ -110,15 +110,15 @@ defmodule Polis.LayoutTest do
       [page] = Layout.pairings(payload).pages
 
       {:text, _x, _y, :bold, size, text, _} =
-        Enum.find(page, &match?({:text, _, _, :bold, _, "Bart" <> _, _}, &1))
+        Enum.find(page, &match?({:text, _, _, :bold, _, "Longname" <> _, _}, &1))
 
       assert size == 7
       assert String.ends_with?(text, "…")
       # The column of a name on A4 is about 182 points wide.
       assert Metrics.width(text, :bold, size) < 185
 
-      {:text, _, _, :bold, short_size, "Short", _} =
-        Enum.find(page, &match?({:text, _, _, :bold, _, "Short", _}, &1))
+      {:text, _, _, :bold, short_size, "Shorty", _} =
+        Enum.find(page, &match?({:text, _, _, :bold, _, "Shorty", _}, &1))
 
       assert short_size == 10
     end
@@ -151,7 +151,7 @@ defmodule Polis.LayoutTest do
           end)
         end)
 
-      assert names == ["Ann Alpha", "Bert Beta", "Cora Gamma", "Dirk Delta"]
+      assert names == ["Player One", "Player Two", "Player Three", "Player Four"]
     end
 
     test "the upper half is the lower half turned half a turn, with a fold line between" do

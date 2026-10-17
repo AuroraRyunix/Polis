@@ -10,7 +10,7 @@ defmodule Polis.Link do
   2. The server sends the latest published round (`round`) at once, and
      again whenever it changes or a newer one is published. Each goes to
      `Polis.Station.round_received/2`, which decides what to print.
-  3. `print` - the arbiter pressed "Print again" in OpenPairings - goes to
+  3. `print` - the arbiter pressed "Print round N again" in OpenPairings - goes to
      `Polis.Station.print_command/3`.
   4. The line goes: try again after a second, then two, up to thirty. A
      refusal other than `revoked` is said on the page and tried again in a

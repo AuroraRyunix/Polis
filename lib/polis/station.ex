@@ -20,7 +20,7 @@ defmodule Polis.Station do
       page says "changed since it was printed" and offers Reprint;
     * the same round with the same `rev` (a reconnect): nothing.
 
-  A `print` from the server - "Print again" pressed in OpenPairings -
+  A `print` from the server - "Print round N again" pressed in OpenPairings -
   queues what it names, for the round it names, when that is the round
   this station holds.
 
