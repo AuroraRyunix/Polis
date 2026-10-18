@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-18
+
 - [Change] **Print station moved out of the tournament's top bar and into its Settings**, under Publishing, with the rail beside it. A thing you set up once and then forget about does not get a tab next to Pairings. The station's page now says where to find it: Settings → Print station → Add a print station.
 - [Feature] **Each printer prints its own share.** A station can be told which categories and which board numbers it prints (`1-20, 35, 40-45`, read back to you before you save, because typos are the only thing arbiters produce more of than pairings). A board prints when its number is in the list and either player is in a ticked category; a bye answers for its one player. Nothing set is everything, so nobody who ignores this feature notices it exists.
 - [Feature] **Name and room, settable from both ends.** The station's page and OpenPairings edit the same settings, OpenPairings keeps them, and a change on one side shows on the other at the next push. Changing them from the hall needs the line up; a change the server cannot hear is a change that did not happen.
