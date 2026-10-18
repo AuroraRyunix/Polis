@@ -65,8 +65,8 @@ defmodule Polis.Autostart do
   defp done({out, _status}), do: {:error, String.trim(out)}
 
   defp reg(args) do
-    run = Application.get_env(:polis, :autostart_cmd, &System.cmd/3)
-    run.("reg", args, stderr_to_stdout: true)
+    run = Application.get_env(:polis, :autostart_cmd, &Polis.Cmd.run/3)
+    run.("reg", args, stderr_to_stdout: true, timeout: 10_000)
   rescue
     error -> {Exception.message(error), 1}
   end
