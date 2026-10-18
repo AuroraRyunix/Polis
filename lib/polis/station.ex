@@ -213,6 +213,13 @@ defmodule Polis.Station do
       "error" => frame["error"]
     }
 
+    # Absent from a server that predates rooms; kept absent, so the page
+    # knows to offer a free-text field instead of a picker.
+    settings =
+      if is_list(frame["rooms_available"]),
+        do: Map.put(settings, "rooms_available", strings(frame["rooms_available"])),
+        else: settings
+
     State.update_tournament(id, &Map.put(&1, "station", settings))
     broadcast_links()
   end

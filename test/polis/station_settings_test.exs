@@ -74,6 +74,34 @@ defmodule Polis.StationSettingsTest do
     assert State.tournament(id)["station"]["boards"] == ""
   end
 
+  test "rooms_available is kept when the server sends it, and absent when it does not", %{
+    server: server,
+    id: id
+  } do
+    eventually(fn -> State.tournament(id)["station"] end)
+    refute Map.has_key?(State.tournament(id)["station"], "rooms_available")
+
+    push_rooms(server, ["Hall A", "Annex"])
+
+    eventually(fn ->
+      State.tournament(id)["station"]["rooms_available"] == ["Hall A", "Annex"]
+    end)
+  end
+
+  test "a room the server does not know is turned down; a known one is kept as the server spells it",
+       %{server: server, id: id} do
+    push_rooms(server, ["Hall A", "Annex"])
+    eventually(fn -> State.tournament(id)["station"]["rooms_available"] end)
+
+    :ok = Link.send_settings(id, %{"room" => "Nowhere"})
+    eventually(fn -> State.tournament(id)["station"]["error"] == "room" end)
+    assert State.tournament(id)["station"]["room"] == ""
+
+    :ok = Link.send_settings(id, %{"room" => " annex "})
+    eventually(fn -> State.tournament(id)["station"]["room"] == "Annex" end)
+    assert State.tournament(id)["station"]["error"] == nil
+  end
+
   test "a share with no board in this round prints nothing", %{server: server, id: id} do
     payload =
       FakeServer.payload(2)
@@ -136,6 +164,61 @@ defmodule Polis.StationSettingsTest do
       assert has_element?(view, "#station-note-#{id}.ok")
     end
 
+    test "offers a room picker when the server knows rooms", %{conn: conn, server: server, id: id} do
+      push_rooms(server, ["Hall A", "Annex"], %{"room" => "Annex"})
+      eventually(fn -> State.tournament(id)["station"]["rooms_available"] end)
+
+      {:ok, view, _html} = live(conn, "/")
+      assert has_element?(view, "select#station-room-#{id}")
+      assert has_element?(view, "select#station-room-#{id} option[value='']")
+      assert has_element?(view, "select#station-room-#{id} option[value='Hall A']")
+      assert has_element?(view, "select#station-room-#{id} option[value='Annex'][selected]")
+      refute has_element?(view, "#station-room-stray-#{id}")
+      refute has_element?(view, "#station-rooms-none-#{id}")
+    end
+
+    test "a tournament without rooms gets the picker with no room and a hint", %{
+      conn: conn,
+      server: server,
+      id: id
+    } do
+      push_rooms(server, [])
+      eventually(fn -> State.tournament(id)["station"]["rooms_available"] == [] end)
+
+      {:ok, view, _html} = live(conn, "/")
+      assert has_element?(view, "select#station-room-#{id}")
+      assert has_element?(view, "#station-rooms-none-#{id}")
+    end
+
+    test "legacy free text is shown as an option that filters nothing", %{
+      conn: conn,
+      server: server,
+      id: id
+    } do
+      push_rooms(server, ["Hall A"], %{"room" => "Old label"})
+      eventually(fn -> State.tournament(id)["station"]["rooms_available"] end)
+
+      {:ok, view, _html} = live(conn, "/")
+      assert has_element?(view, "select#station-room-#{id} option[value='Old label'][selected]")
+      assert has_element?(view, "#station-room-stray-#{id}")
+    end
+
+    test "an older server keeps the free-text room field", %{conn: conn, id: id} do
+      eventually(fn -> State.tournament(id)["station"] end)
+      {:ok, view, _html} = live(conn, "/")
+      assert has_element?(view, "input#station-room-#{id}[type=text]")
+      refute has_element?(view, "select#station-room-#{id}")
+    end
+
+    test "a refused room is said", %{conn: conn, server: server, id: id} do
+      push_rooms(server, ["Hall A"])
+      eventually(fn -> State.tournament(id)["station"]["rooms_available"] end)
+      {:ok, view, _html} = live(conn, "/")
+
+      :ok = Link.send_settings(id, %{"room" => "Nowhere"})
+      eventually(fn -> has_element?(view, "#station-room-refused-#{id}") end)
+    end
+
     test "waits while the line is down", %{conn: conn, server: server, id: id} do
       eventually(fn -> State.tournament(id)["station"] end)
       FakeServer.down(server)
@@ -146,5 +229,11 @@ defmodule Polis.StationSettingsTest do
       assert has_element?(view, "#station-form-#{id} fieldset[disabled]")
       assert {:error, :down} = Station.change_settings(id, %{"room" => "X"})
     end
+  end
+
+  defp push_rooms(server, rooms, fields \\ %{}) do
+    settings = FakeServer.settings(Map.put(fields, "rooms_available", rooms))
+    FakeServer.set(server, :settings, settings)
+    FakeServer.push(server, Map.put(settings, "type", "settings"))
   end
 end
