@@ -152,9 +152,10 @@ plugin knows the other exists.
 `openpairings-deploy/deploy_openpairings.py` uploads each plugin listed in
 `OPENPAIRINGS_PLUGINS` into `<app>/plugins/<name>`, sets `PAIRINGS_EDITION`,
 `PAIRINGS_PLUGINS_DIR` and `PAIRINGS_PLUGINS` at build and run time, runs
-`mix deps.get` and the build on the box, and migrates. This plugin goes
-there as `<app>/plugins/openpairings_polis` with one line, not made here
-(the deploy repository is not this one's to change):
+`mix deps.get` and the build on the box, and migrates. The plugin has been
+on the hosted OpenPairings at pairings.cloud since 2026-10-18, as
+`<app>/plugins/openpairings_polis`, through this one line (the deploy
+repository is not this one's to change, so the line lives there):
 
 ```python
 ("openpairings_polis", os.path.join(LOCAL_PROJECTS_ROOT, "polis", "plugins", "openpairings_polis")),

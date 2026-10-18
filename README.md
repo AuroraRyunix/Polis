@@ -52,7 +52,7 @@ mix deps.get
 mix phx.server
 ```
 
-Open `http://localhost:4061`. In OpenPairings, open the tournament's *Print
+Open `http://localhost:4061`. In OpenPairings (on pairings.cloud), open the tournament's *Print
 station* page and press *Add a print station*; paste the link it shows into
 the page. Choose the printer and the paper. That is the setup.
 
@@ -143,7 +143,8 @@ recorder standing in for `lp` and PowerShell. The server is a stand-in on
 a port of its own (`test/support/fake_server.ex`).
 
 The OpenPairings side, `plugins/openpairings_polis`, is built into
-OpenPairings and tested there: [docs/openpairings-integration.md](docs/openpairings-integration.md).
+OpenPairings and tested there, and it is on the hosted OpenPairings at
+pairings.cloud since 2026-10-18: [docs/openpairings-integration.md](docs/openpairings-integration.md).
 
 ## Licence
 
