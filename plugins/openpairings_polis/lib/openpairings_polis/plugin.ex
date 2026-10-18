@@ -82,9 +82,10 @@ defmodule OpenPairingsPolis.Plugin do
     [
       %{
         key: @feature,
-        # Any arbiter with a printer in the hall might want it; no
-        # federation has an opinion about printers.
-        federation: nil,
+        # The hosted edition is a Belgian server, and every plug-in on it
+        # lives in the Belgian pack. "Optional tools for any federation" is
+        # where nobody looks, as was pointed out with some force.
+        federation: "BEL",
         label: gettext("Print station"),
         description:
           gettext(

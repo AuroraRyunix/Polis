@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **The Print station switch is in the Belgian pack** of OpenPairings' Features, not under "Optional tools for any federation", a heading whose main achievement was never being read.
+
 ## [0.1.0] - 2026-10-18
 
 - [Feature] **A print station for the hall.** Polis joins a tournament in OpenPairings with a join link, keeps a line open to it, and prints the pairings list and the place cards of every newly published round on the printer of the machine it runs on. Once per round, which is the number of times anyone wants a pairings list taped to a pillar.

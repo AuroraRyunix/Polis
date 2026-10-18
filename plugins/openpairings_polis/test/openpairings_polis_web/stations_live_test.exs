@@ -29,7 +29,7 @@ defmodule OpenPairingsPolisWeb.StationsLiveTest do
     end
 
     test "the feature is a general one, in no federation's pack" do
-      assert [%{key: "polis_print_station", federation: nil}] = Plugin.features()
+      assert [%{key: "polis_print_station", federation: "BEL"}] = Plugin.features()
     end
   end
 
