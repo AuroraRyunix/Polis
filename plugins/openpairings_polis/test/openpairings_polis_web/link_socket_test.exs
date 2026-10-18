@@ -33,10 +33,20 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
 
   describe "hello" do
     test "a good key is welcomed, and the station marked online", %{station: s, key: key} do
-      {[welcome], state} = frames(dial(s.device_id, key))
+      {[welcome, settings], state} = frames(dial(s.device_id, key))
 
       assert %{"type" => "welcome", "v" => 1, "tournament" => %{"id" => tid}} = welcome
       assert tid == s.tournament_id
+
+      assert %{
+               "type" => "settings",
+               "name" => "Hall PC",
+               "room" => "",
+               "categories" => [],
+               "boards" => "",
+               "categories_available" => []
+             } = settings
+
       assert state.station.id == s.id
       assert Stations.online?(Repo.get!(Station, s.id))
     end
@@ -67,7 +77,7 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
   describe "rounds" do
     test "the published round comes right after welcome", %{station: s, key: key, round: r} do
       publish!(r)
-      {[_welcome, round], _state} = frames(dial(s.device_id, key))
+      {[_welcome, _settings, round], _state} = frames(dial(s.device_id, key))
 
       assert %{"type" => "round", "round" => %{"round" => 1, "rev" => rev, "boards" => boards}} =
                round
@@ -77,7 +87,7 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
     end
 
     test "an unpublished round is not sent", %{station: s, key: key} do
-      assert {[_welcome], state} = frames(dial(s.device_id, key))
+      assert {[_welcome, _settings], state} = frames(dial(s.device_id, key))
       assert {[], _} = frames(LinkSocket.handle_info(:recompute, state))
     end
 
@@ -87,7 +97,7 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       round: r,
       tournament: t
     } do
-      {[_welcome], state} = frames(dial(s.device_id, key))
+      {[_welcome, _settings], state} = frames(dial(s.device_id, key))
 
       {:ok, round} = Tournaments.publish_round_now(Tournaments.get_round(t.id, r.number))
       tid = t.id
@@ -115,7 +125,9 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       round: r
     } do
       publish!(r)
-      {[_welcome, %{"round" => %{"rev" => rev1}}], state} = frames(dial(s.device_id, key))
+
+      {[_welcome, _settings, %{"round" => %{"rev" => rev1}}], state} =
+        frames(dial(s.device_id, key))
 
       [p | _] = Repo.preload(r, :pairings).pairings
       p |> Ecto.Changeset.change(display_board: "7") |> Repo.update!()
@@ -174,6 +186,79 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
 
       LinkSocket.terminate(:normal, old)
       assert Stations.online?(Repo.get!(Station, s.id))
+    end
+  end
+
+  describe "name, room and share" do
+    defp say(state, frame),
+      do: LinkSocket.handle_in({Jason.encode!(frame), [opcode: :text]}, state)
+
+    test "the station changes them; they are kept and told back, with its new share", %{
+      station: s,
+      key: key,
+      round: r,
+      tournament: t
+    } do
+      t |> Ecto.Changeset.change(categories: ["U12"]) |> Repo.update!()
+      publish!(r)
+
+      {[_welcome, _settings, %{"round" => %{"boards" => [_, _]}}], state} =
+        frames(dial(s.device_id, key))
+
+      {frames, state} =
+        frames(say(state, %{type: "settings", name: "Door", room: "Annex", boards: "2"}))
+
+      assert [
+               %{"type" => "settings", "name" => "Door", "room" => "Annex", "boards" => "2"},
+               %{"type" => "round", "round" => %{"boards" => [%{"board" => "2"}]} = payload}
+             ] = frames
+
+      assert payload["selection"]["room"] == "Annex"
+      assert %{name: "Door", room: "Annex", filter_boards: "2"} = Repo.get!(Station, s.id)
+
+      # The topic says so too; the socket has already told the station.
+      sid = s.id
+      assert_receive {:polis_settings_changed, ^sid} = msg
+      assert {[], _} = frames(LinkSocket.handle_info(msg, state))
+    end
+
+    test "board numbers that do not read are turned down, with what still holds", %{
+      station: s,
+      key: key
+    } do
+      {_frames, state} = frames(dial(s.device_id, key))
+
+      assert {[%{"type" => "settings", "error" => "boards", "boards" => "", "room" => ""}], _} =
+               frames(say(state, %{type: "settings", room: "X", boards: "9-1"}))
+
+      assert Repo.get!(Station, s.id).room == ""
+    end
+
+    test "a change on the page reaches the socket and goes down the line", %{
+      station: s,
+      key: key,
+      tournament: t
+    } do
+      {_frames, state} = frames(dial(s.device_id, key))
+      {:ok, _} = Stations.update_settings(t, s.id, %{"name" => "Renamed", "room" => "Hall 2"})
+
+      sid = s.id
+      assert_receive {:polis_settings_changed, ^sid} = msg
+
+      assert {[%{"type" => "settings", "name" => "Renamed", "room" => "Hall 2"}], _} =
+               frames(LinkSocket.handle_info(msg, state))
+    end
+
+    test "a category added to the tournament is offered at the next look", %{
+      station: s,
+      key: key,
+      tournament: t
+    } do
+      {_frames, state} = frames(dial(s.device_id, key))
+      t |> Ecto.Changeset.change(categories: ["Seniors"]) |> Repo.update!()
+
+      assert {[%{"type" => "settings", "categories_available" => ["Seniors"]}], _} =
+               frames(LinkSocket.handle_info(:recompute, state))
     end
   end
 end

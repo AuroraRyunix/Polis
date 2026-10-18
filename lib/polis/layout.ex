@@ -172,7 +172,7 @@ defmodule Polis.Layout do
       end
 
     info =
-      [t["city"], date(payload) || t["dates"]]
+      ([t["city"], date(payload) || t["dates"]] ++ selection(payload))
       |> Enum.reject(&(&1 in [nil, ""]))
       |> Enum.join("  ·  ")
 
@@ -183,6 +183,26 @@ defmodule Polis.Layout do
       {:line, @margin, h - @margin - 62, w - @margin, h - @margin - 62, [width: 0.75]}
     ]
   end
+
+  # A station that prints only part of the round says which part, so the
+  # sheet on the pillar in room B is not mistaken for the whole hall's.
+  defp selection(%{"selection" => %{} = sel}) do
+    boards =
+      case sel["boards"] do
+        b when is_binary(b) and b != "" -> gettext("boards %{list}", list: b)
+        _all -> nil
+      end
+
+    categories =
+      case sel["categories"] do
+        [_ | _] = c -> Enum.join(c, ", ")
+        _all -> nil
+      end
+
+    [sel["room"], boards, categories]
+  end
+
+  defp selection(_payload), do: []
 
   # The day the round was published, as the date on the sheet.
   defp date(payload) do

@@ -3,7 +3,8 @@ defmodule OpenPairingsPolis.Plugin do
   Polis, the print station, as an OpenPairings plugin (`PairingsEngine.Plugin`).
 
   A hall PC with a printer joins a tournament once, with a one-time link
-  made on `/p/polis/tournaments/:id`, and from then on holds a WebSocket
+  made on `/p/polis/tournaments/:id` - the tournament's Settings, under
+  Print station - and from then on holds a WebSocket
   open to `/p/polis/link`. Every time a round's pairings go public, the
   station gets the round and prints it. The plugin prints nothing itself;
   it would not know a printer if one fell on it.
@@ -64,12 +65,24 @@ defmodule OpenPairingsPolis.Plugin do
     ]
   end
 
+  # In the tournament's Settings, not its top bar: a print station is set
+  # up once and then left alone, which does not earn it a tab beside
+  # Pairings. The icon is one the core's own source uses, because the
+  # stylesheet only builds those.
   @impl true
-  def tournament_menu_entries(scope, %Tournament{} = t) do
+  def tournament_settings_entries(scope, %Tournament{} = t) do
     if Features.enabled?(scope, @feature) do
       PolisGettext.follow_core_locale()
 
-      [%{id: "polis", label: gettext("Print station"), path: "/p/polis/tournaments/#{t.id}"}]
+      [
+        %{
+          id: "polis",
+          label: gettext("Print station"),
+          path: "/p/polis/tournaments/#{t.id}",
+          icon: "hero-printer-micro",
+          group: :publishing
+        }
+      ]
     else
       []
     end
@@ -89,7 +102,7 @@ defmodule OpenPairingsPolis.Plugin do
         label: gettext("Print station"),
         description:
           gettext(
-            "Adds \"Print station\" to a tournament's menu: join a PC in the hall with a printer, and it prints the pairings and the place cards of every round as soon as you publish it."
+            "Adds \"Print station\" to a tournament's Settings: join a PC in the hall with a printer, and it prints the pairings and the place cards of every round as soon as you publish it."
           )
       }
     ]

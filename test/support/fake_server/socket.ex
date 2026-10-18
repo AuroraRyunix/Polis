@@ -42,18 +42,43 @@ defmodule Polis.FakeServer.Socket do
             "tournament" => server.tournament
           })
 
+        settings =
+          if server.settings,
+            do: [{:text, Jason.encode!(Map.put(server.settings, "type", "settings"))}],
+            else: []
+
         round =
           if server.round,
             do: [{:text, Jason.encode!(%{"type" => "round", "round" => server.round})}],
             else: []
 
-        {:push, [{:text, welcome} | round], %{state | hello?: true}}
+        {:push, [{:text, welcome} | settings] ++ round, %{state | hello?: true}}
     end
   end
 
   defp handle(%{"type" => "status"} = frame, %{hello?: true} = state) do
     update(state.agent, &%{&1 | statuses: [Map.delete(frame, "type") | &1.statuses]})
     {:ok, state}
+  end
+
+  # Kept and told back, as OpenPairings does; "bad" board numbers are
+  # turned down, so a test can watch a refusal.
+  defp handle(%{"type" => "settings"} = frame, %{hello?: true} = state) do
+    change = Map.take(frame, ~w(name room categories boards))
+
+    reply =
+      Agent.get_and_update(state.agent, fn s ->
+        s = %{s | settings_sent: [change | s.settings_sent]}
+
+        if change["boards"] == "bad" do
+          {Map.put(s.settings || %{}, "error", "boards"), s}
+        else
+          kept = Map.merge(s.settings || %{}, change)
+          {kept, %{s | settings: kept}}
+        end
+      end)
+
+    {:push, {:text, Jason.encode!(Map.put(reply, "type", "settings"))}, state}
   end
 
   defp handle(%{"type" => "leave"}, state) do

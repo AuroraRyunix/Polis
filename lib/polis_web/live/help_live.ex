@@ -44,7 +44,7 @@ defmodule PolisWeb.HelpLive do
           <h2>Aansluiten bij een toernooi</h2>
           <ol>
             <li>
-              Open in OpenPairings de pagina Printstation van het toernooi en druk op "Printstation toevoegen". Er verschijnt een link, goed voor één station en vijftien minuten.
+              In OpenPairings: Instellingen van het toernooi → Printstation → "Printstation toevoegen". Er verschijnt een link, goed voor één station en vijftien minuten.
             </li>
             <li>Plak de link in het veld "Aansluiten bij een toernooi" op deze pagina.</li>
             <li>
@@ -81,6 +81,30 @@ defmodule PolisWeb.HelpLive do
           </ul>
           <p>
             Een tafelkaartje is een tentje: vouw het blad op de stippellijn, en elke kant leest goed voor wie ervoor zit. Wie een bye heeft, krijgt geen kaartje.
+          </p>
+        </section>
+
+        <section id="help-share">
+          <h2>Wat dit station afdrukt</h2>
+          <p>
+            Een zaal met twee printers wil niet twee keer dezelfde lijst. Onder "Dit station" bij een toernooi geef je het station een naam en een ruimte, en kies je wat het afdrukt: categorieën (vinkjes) en bordnummers, zoals <span class="mono">1-20, 35, 40-45</span>. Onder het veld staat meteen hoe Polis de nummers leest.
+          </p>
+          <ul class="prose">
+            <li>
+              Een bord wordt afgedrukt als zijn nummer in de lijst staat én een van beide spelers in een aangevinkte categorie zit. Bij een bye telt de ene speler die er is.
+            </li>
+            <li>
+              Niets aangevinkt is elke categorie; geen bordnummers is elk bord. Niets ingesteld is dus alles, zoals vroeger.
+            </li>
+            <li>
+              Het nummer van een bord is het getal waarmee het begint: bord 3.1 van een teamtoernooi is 3.
+            </li>
+            <li>
+              Een ronde zonder één bord voor dit station wordt niet afgedrukt. Een lijst die wel afgedrukt wordt, zet de ruimte en het deel in de kop.
+            </li>
+          </ul>
+          <p>
+            OpenPairings bewaart dit, niet Polis: de arbiter kan hetzelfde wijzigen bij Instellingen → Printstation, en wat de een bewaart, ziet de ander bij de volgende verbinding. Wijzigen kan dus alleen als de verbinding er is. Een filter dat na het afdrukken verandert, drukt niets opnieuw af; de ronde staat dan op "gewijzigd sinds het afgedrukt is".
           </p>
         </section>
 
@@ -150,7 +174,7 @@ defmodule PolisWeb.HelpLive do
           <h2>Joining a tournament</h2>
           <ol>
             <li>
-              In OpenPairings, open the tournament's Print station page and press "Add a print station". A link appears, good for one station and fifteen minutes.
+              In OpenPairings: the tournament's Settings → Print station → "Add a print station". A link appears, good for one station and fifteen minutes.
             </li>
             <li>Paste the link into the "Join a tournament" field on this page.</li>
             <li>
@@ -187,6 +211,30 @@ defmodule PolisWeb.HelpLive do
           </ul>
           <p>
             A place card is a tent: fold the sheet on the dashed line, and each side reads the right way up for whoever sits in front of it. A player with a bye gets no card.
+          </p>
+        </section>
+
+        <section id="help-share">
+          <h2>What this station prints</h2>
+          <p>
+            A hall with two printers does not want the same list twice. Under "This station" by a tournament you give the station a name and a room, and choose what it prints: categories (tick boxes) and board numbers, like <span class="mono">1-20, 35, 40-45</span>. Below the field, Polis says at once how it reads the numbers.
+          </p>
+          <ul class="prose">
+            <li>
+              A board prints when its number is in the list and either player is in a ticked category. For a bye, the one player there is counts.
+            </li>
+            <li>
+              Nothing ticked is every category; no board numbers is every board. Nothing set is therefore everything, as before.
+            </li>
+            <li>
+              A board's number is the number it starts with: board 3.1 of a team tournament is 3.
+            </li>
+            <li>
+              A round without a single board for this station is not printed. A list that does print puts the room and the share in its heading.
+            </li>
+          </ul>
+          <p>
+            OpenPairings keeps these, not Polis: the arbiter can change the same things under Settings → Print station, and what one side saves, the other sees on the next push. So changing them needs the line up. A share that changes after a round was printed reprints nothing; the round shows "changed since it was printed".
           </p>
         </section>
 

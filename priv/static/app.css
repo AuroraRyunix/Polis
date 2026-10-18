@@ -35,6 +35,15 @@ button.danger, .actions button, #refresh-printers, #update-later, #check-now, #u
 button.danger { color: var(--bad); border-color: var(--bad); min-height: 34px; }
 .switches { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .3rem; }
 .buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0 0; }
+details.station { margin: .4rem 0; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: 8px; }
+details.station summary { cursor: pointer; padding: .2rem 0; }
+details.station[open] summary { margin-bottom: .5rem; }
+details.station fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+details.station fieldset[disabled] { opacity: .55; }
+details.station label { display: flex; flex-wrap: wrap; gap: .3rem .6rem; }
+details.station .ticks { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; }
+details.station .ticks label { display: inline-flex; }
+details.station p { margin: 0; }
 .job { display: grid; grid-template-columns: 3.2rem 1fr auto; gap: .2rem .6rem; align-items: center; }
 .job .status { grid-column: 2; font-size: .9rem; color: var(--muted); }
 .job.printing .status { color: var(--accent); }

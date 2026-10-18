@@ -12,11 +12,18 @@ defmodule PolisWeb.StationLive do
   Two buttons here can make paper come out: "Test print" and "Reprint".
   Both are a person's click. Everything else that prints is the station
   doing what the switches say.
+
+  Per tournament, "This station" shows the name, room and share of the
+  round the server has for it, and changes them - through the server,
+  which answers with what it kept. While the line is down the form waits:
+  OpenPairings holds the truth, and a change it cannot hear is a change
+  that did not happen. What is being typed is a draft, kept until saved,
+  so a round arriving meanwhile does not wipe it.
   """
 
   use PolisWeb, :live_view
 
-  alias Polis.{Autostart, Printer, Queue, State, Station, Updates}
+  alias Polis.{Autostart, BoardRanges, Printer, Queue, State, Station, Updates}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -42,7 +49,9 @@ defmodule PolisWeb.StationLive do
        update_busy?: false,
        checking?: false,
        printers: nil,
-       printers_error: nil
+       printers_error: nil,
+       drafts: %{},
+       station_notes: %{}
      )
      |> load()}
   end
@@ -85,6 +94,50 @@ defmodule PolisWeb.StationLive do
     end
 
     {:noreply, load(socket)}
+  end
+
+  def handle_event("station_change", %{"tournament" => id} = params, socket) do
+    if State.tournament(id) do
+      {:noreply, assign(socket, drafts: Map.put(socket.assigns.drafts, id, draft(params)))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("station_save", %{"tournament" => id} = params, socket) do
+    note =
+      case State.tournament(id) && Station.change_settings(id, draft(params)) do
+        :ok ->
+          {:ok, gettext("Sent. What OpenPairings keeps shows here.")}
+
+        {:error, :down} ->
+          {:error, gettext("Not connected: the server keeps these, so it has to hear them.")}
+
+        {:error, {:boards, _}} ->
+          {:error,
+           gettext("The board numbers do not read. Use numbers and ranges: 1-20, 35, 40-45.")}
+
+        _gone ->
+          nil
+      end
+
+    drafts =
+      if match?({:ok, _}, note),
+        do: Map.delete(socket.assigns.drafts, id),
+        else: socket.assigns.drafts
+
+    {:noreply,
+     socket
+     |> assign(drafts: drafts, station_notes: Map.put(socket.assigns.station_notes, id, note))
+     |> load()}
+  end
+
+  def handle_event("station_reset", %{"id" => id}, socket) do
+    {:noreply,
+     assign(socket,
+       drafts: Map.delete(socket.assigns.drafts, id),
+       station_notes: Map.delete(socket.assigns.station_notes, id)
+     )}
   end
 
   def handle_event("reprint_round", %{"id" => id}, socket) do
@@ -269,6 +322,37 @@ defmodule PolisWeb.StationLive do
   def link_error({:refused, _other}), do: gettext("refused; trying again in a minute")
   def link_error(_other), do: gettext("the line went down; trying again")
 
+  defp draft(params) do
+    %{
+      "name" => params["name"] || "",
+      "room" => params["room"] || "",
+      "categories" =>
+        params |> Map.get("categories", []) |> List.wrap() |> Enum.reject(&(&1 == "")),
+      "boards" => params["boards"] || ""
+    }
+  end
+
+  # What the form shows: the draft while there is one, the server's word
+  # otherwise.
+  defp station_params(t, drafts) do
+    Map.get(drafts, t["id"]) ||
+      Map.take(t["station"] || %{}, ~w(name room categories boards))
+  end
+
+  defp boards_text({:ok, []}), do: gettext("Every board.")
+
+  defp boards_text({:ok, ranges}),
+    do: gettext("Boards %{list}.", list: BoardRanges.format(ranges))
+
+  defp boards_text({:error, {:backwards, token}}),
+    do: gettext("\"%{token}\" runs backwards: put the smaller number first.", token: token)
+
+  defp boards_text({:error, {:too_big, token}}),
+    do: gettext("\"%{token}\" is past board 9999.", token: token)
+
+  defp boards_text({:error, {_bad, token}}),
+    do: gettext("\"%{token}\" is not a board number or a range like 40-45.", token: token)
+
   defp load(socket) do
     assign(socket,
       tournaments: safe(&Station.overview/0, []),
@@ -303,27 +387,34 @@ defmodule PolisWeb.StationLive do
     <Layouts.app flash={@flash} locale={@locale} page={:station}>
       <section :if={@notice} id="update">
         <h2>{gettext("Polis %{version} is out.", version: @notice.version)}</h2>
+        
         <p :if={@notice.size} class="note">
           {gettext("The download is %{mb} MB.", mb: megabytes(@notice.size))}
         </p>
+        
         <p :if={@install_kind != :manual} class="note">
           {gettext(
             "Nothing prints for about a minute while it installs. It waits for a sheet that is printing."
           )}
         </p>
+        
         <p :if={@install_kind == :manual && !@notice.no_build} class="note">
           {gettext("This copy is updated by hand: download the new one and replace this.")}
         </p>
+        
         <p :if={@notice.no_build} class="note">
           {gettext("There is no build for this machine.")}
         </p>
+        
         <p :if={@update_busy?} id="update-busy" class="error" role="alert">
           {gettext("A sheet is printing. Try again when it is out, or install anyway.")}
         </p>
+        
         <form id="update-form" phx-submit="update">
           <button :if={@install_kind != :manual} id="update-button" type="submit">
             {gettext("Download and install")}
           </button>
+          
           <a
             :if={@install_kind == :manual && !@notice.no_build}
             id="update-link"
@@ -332,6 +423,7 @@ defmodule PolisWeb.StationLive do
           >
             {gettext("Releases")}
           </a>
+          
           <button
             :if={@update_busy? && @install_kind != :manual}
             id="update-force"
@@ -344,6 +436,7 @@ defmodule PolisWeb.StationLive do
           >
             {gettext("Install anyway")}
           </button>
+          
           <button
             id="update-later"
             type="button"
@@ -354,30 +447,32 @@ defmodule PolisWeb.StationLive do
           </button>
         </form>
       </section>
-
+      
       <p :if={match?({:failed, _, _}, @last_update)} id="update-failed" class="error">
         {gettext("The last update, to %{version}, did not work: %{why}",
           version: elem(@last_update, 1),
           why: elem(@last_update, 2)
         )}
       </p>
-
+      
       <section id="tournaments">
         <h2>{gettext("Tournaments")}</h2>
+        
         <p :if={@tournaments == []} id="no-tournaments" class="note">
           {gettext("Joined to no tournament yet. Paste a join link below.")}
         </p>
+        
         <ul :if={@tournaments != []} id="tournament-list">
           <li :for={t <- @tournaments} id={"tournament-#{t["id"]}"} class="tournament">
             <div class="row">
               <span
                 class={["dot", if(t["link"].up?, do: "up", else: "down")]}
                 title={if(t["link"].up?, do: gettext("connected"), else: gettext("not connected"))}
-              ></span>
-              <strong class="tournament-name">{t["name"]}</strong>
+              ></span> <strong class="tournament-name">{t["name"]}</strong>
               <span :if={!t["link"].up? && t["link"].error} class="note">
                 {link_error(t["link"].error)}
               </span>
+              
               <button
                 id={"remove-#{t["id"]}"}
                 type="button"
@@ -389,6 +484,7 @@ defmodule PolisWeb.StationLive do
                 {gettext("Remove")}
               </button>
             </div>
+            
             <p class="note">
               <%= if held_round(t) do %>
                 {gettext("Round %{n} is the latest published round.", n: held_round(t))}
@@ -396,6 +492,7 @@ defmodule PolisWeb.StationLive do
                 {gettext("No round published yet.")}
               <% end %>
             </p>
+            
             <p :if={t["changed"]} id={"changed-#{t["id"]}"} class="warn">
               {gettext("Round %{n} changed since it was printed.", n: held_round(t))}
               <button
@@ -407,6 +504,14 @@ defmodule PolisWeb.StationLive do
                 {gettext("Reprint")}
               </button>
             </p>
+            
+            <.station_form
+              :if={t["station"]}
+              t={t}
+              params={station_params(t, @drafts)}
+              draft?={Map.has_key?(@drafts, t["id"])}
+              note={@station_notes[t["id"]]}
+            />
             <div class="switches">
               <label>
                 <input
@@ -417,9 +522,9 @@ defmodule PolisWeb.StationLive do
                   phx-value-id={t["id"]}
                   phx-value-which="print_pairings"
                   phx-value-on={to_string(t["print_pairings"] == false)}
-                />
-                {gettext("Print the pairings")}
+                /> {gettext("Print the pairings")}
               </label>
+              
               <label>
                 <input
                   id={"switch-placecards-#{t["id"]}"}
@@ -429,9 +534,9 @@ defmodule PolisWeb.StationLive do
                   phx-value-id={t["id"]}
                   phx-value-which="print_placecards"
                   phx-value-on={to_string(t["print_placecards"] == false)}
-                />
-                {gettext("Print the place cards")}
+                /> {gettext("Print the place cards")}
               </label>
+              
               <form id={"copies-form-#{t["id"]}"} phx-change="copies">
                 <input type="hidden" name="tournament" value={t["id"]} />
                 <label>
@@ -447,9 +552,10 @@ defmodule PolisWeb.StationLive do
           </li>
         </ul>
       </section>
-
+      
       <section id="join">
         <h2>{gettext("Join a tournament")}</h2>
+        
         <.form for={@join_form} id="join-form" phx-submit="join">
           <input
             id="join-link"
@@ -463,29 +569,35 @@ defmodule PolisWeb.StationLive do
             {if @joining?, do: gettext("Joining..."), else: gettext("Join")}
           </button>
         </.form>
+        
         <p :if={@message} id="join-message" class={elem(@message, 0)}>{elem(@message, 1)}</p>
+        
         <p class="note">
           {gettext(
-            "In OpenPairings: the tournament's Print station page, Add a print station. Paste the link it shows; that is all."
+            "In OpenPairings: the tournament's Settings → Print station → Add a print station. Paste the link it shows; that is all."
           )}
         </p>
       </section>
-
+      
       <section id="printer">
         <h2>{gettext("Printer")}</h2>
+        
         <p :if={@dry_run?} id="dry-run-note" class="note">
           {gettext(
             "Dry run: nothing goes to a printer. The sheets are written as PDF files in the data folder."
           )}
         </p>
+        
         <form id="printer-form" phx-change="printer">
           <label>
             {gettext("Printer")}
             <select id="printer-select" name="printer" disabled={@printers == nil}>
               <option value="" selected={@printer == nil}>{gettext("(choose a printer)")}</option>
+              
               <option :for={name <- @printers || []} value={name} selected={name == @printer}>
                 {name}
               </option>
+              
               <option
                 :if={@printer && @printers && @printer not in @printers}
                 value={@printer}
@@ -495,34 +607,43 @@ defmodule PolisWeb.StationLive do
               </option>
             </select>
           </label>
+          
           <label>
             {gettext("Paper")}
             <select id="paper-select" name="paper">
               <option value="a4" selected={@paper == :a4}>A4</option>
+              
               <option value="letter" selected={@paper == :letter}>Letter</option>
             </select>
           </label>
         </form>
+        
         <p :if={@printers == nil} class="note">{gettext("Looking for printers...")}</p>
+        
         <p :if={@printers_error} id="printers-error" class="error">
           {gettext("The printer list did not come: %{why}", why: @printers_error)}
         </p>
+        
         <p :if={@printer == nil && @printers != nil} id="no-printer" class="warn">
           {gettext("No printer chosen. Rounds that arrive wait in the queue until one is.")}
         </p>
+        
         <p class="buttons">
           <button id="refresh-printers" type="button" phx-click="refresh_printers">
             {gettext("Look for printers again")}
           </button>
+          
           <button id="test-print" type="button" phx-click="test_print" disabled={@printer == nil}>
             {gettext("Test print")}
           </button>
         </p>
       </section>
-
+      
       <section id="queue">
         <h2>{gettext("Queue")}</h2>
+        
         <p :if={@jobs == []} id="no-jobs" class="note">{gettext("Nothing printed yet.")}</p>
+        
         <ul :if={@jobs != []} id="job-list">
           <li :for={job <- @jobs} id={"job-#{job.id}"} class={"job #{job.status}"}>
             <span class="mono">{time(job.created_at)}</span>
@@ -531,11 +652,12 @@ defmodule PolisWeb.StationLive do
               <span :if={job.tournament_name} class="note">{job.tournament_name}</span>
               <span :if={job.copies > 1} class="note">x{job.copies}</span>
             </span>
-            <span class={["status", job.status == :failed && "error"]}>{job_status(job)}</span>
+             <span class={["status", job.status == :failed && "error"]}>{job_status(job)}</span>
             <span class="actions">
               <a id={"pdf-#{job.id}"} href={"/jobs/#{job.id}/pdf"} target="_blank" rel="noopener">
                 {gettext("Open PDF")}
               </a>
+              
               <button
                 id={"reprint-#{job.id}"}
                 type="button"
@@ -548,12 +670,14 @@ defmodule PolisWeb.StationLive do
           </li>
         </ul>
       </section>
-
+      
       <section id="program">
         <h2>{gettext("This program")}</h2>
+        
         <p class="note">
           {gettext("Version")} <span class="mono">{Updates.current_version()}</span>
         </p>
+        
         <p>
           <label>
             <input
@@ -562,10 +686,10 @@ defmodule PolisWeb.StationLive do
               checked={@update_mode == "ask"}
               phx-click="update_check"
               phx-value-on={to_string(@update_mode != "ask")}
-            />
-            {gettext("Look for a newer version now and then")}
+            /> {gettext("Look for a newer version now and then")}
           </label>
         </p>
+        
         <p :if={Autostart.supported?()}>
           <label>
             <input
@@ -574,14 +698,15 @@ defmodule PolisWeb.StationLive do
               checked={@autostart?}
               phx-click="autostart"
               phx-value-on={to_string(!@autostart?)}
-            />
-            {gettext("Start Polis when Windows starts")}
+            /> {gettext("Start Polis when Windows starts")}
           </label>
         </p>
+        
         <p>
           <button id="check-now" type="button" phx-click="check_now" disabled={@checking?}>
             {if @checking?, do: gettext("Looking..."), else: gettext("Look now")}
           </button>
+          
           <span :if={@update_message} id="update-message" class={elem(@update_message, 0)}>
             {elem(@update_message, 1)}
           </span>
@@ -589,5 +714,145 @@ defmodule PolisWeb.StationLive do
       </section>
     </Layouts.app>
     """
+  end
+
+  # The station's name, room and share of the round in one tournament.
+  attr :t, :map, required: true
+  attr :params, :map, required: true
+  attr :draft?, :boolean, required: true
+  attr :note, :any, default: nil
+
+  defp station_form(assigns) do
+    station = assigns.t["station"]
+
+    assigns =
+      assign(assigns,
+        id: assigns.t["id"],
+        up?: assigns.t["link"].up?,
+        available: station["categories_available"] || [],
+        picked: assigns.params["categories"] || [],
+        boards: BoardRanges.parse(assigns.params["boards"]),
+        refused?: station["error"] == "boards"
+      )
+
+    ~H"""
+    <details id={"station-#{@id}"} class="station" open={@draft?}>
+      <summary>
+        {gettext("This station")}: <strong>{@t["station"]["name"]}</strong>
+        <span :if={@t["station"]["room"] != ""} class="note">· {@t["station"]["room"]}</span>
+        <span class="note">· {share_text(@t["station"])}</span>
+      </summary>
+      
+      <form id={"station-form-#{@id}"} phx-change="station_change" phx-submit="station_save">
+        <input type="hidden" name="tournament" value={@id} />
+        <fieldset disabled={!@up?}>
+          <label>
+            {gettext("Name")}
+            <input
+              id={"station-name-#{@id}"}
+              type="text"
+              name="name"
+              value={@params["name"]}
+              maxlength="60"
+            />
+          </label>
+          
+          <label>
+            {gettext("Room")}
+            <input
+              id={"station-room-#{@id}"}
+              type="text"
+              name="room"
+              value={@params["room"]}
+              maxlength="60"
+              placeholder={gettext("e.g. Main hall")}
+            />
+          </label>
+          
+          <div :if={@available != []} id={"station-categories-#{@id}"} class="ticks">
+            <span>{gettext("Categories")}</span> <input type="hidden" name="categories[]" value="" />
+            <label :for={{c, i} <- Enum.with_index(@available)}>
+              <input
+                id={"station-cat-#{@id}-#{i}"}
+                type="checkbox"
+                name="categories[]"
+                value={c}
+                checked={c in @picked}
+              /> {c}
+            </label>
+          </div>
+          
+          <label>
+            {gettext("Board numbers")}
+            <input
+              id={"station-boards-#{@id}"}
+              type="text"
+              name="boards"
+              value={@params["boards"]}
+              placeholder="1-20, 35, 40-45"
+              autocomplete="off"
+            />
+          </label>
+          
+          <p
+            id={"station-boards-parsed-#{@id}"}
+            class={if(match?({:ok, _}, @boards), do: "note", else: "error")}
+          >
+            {boards_text(@boards)}
+          </p>
+          
+          <p class="note">
+            {gettext(
+              "Nothing ticked and no board numbers: everything. A board prints when its number is in the list and either player is in a ticked category."
+            )}
+          </p>
+          
+          <p class="buttons">
+            <button id={"station-save-#{@id}"} type="submit">{gettext("Save")}</button>
+            <button
+              :if={@draft?}
+              id={"station-reset-#{@id}"}
+              type="button"
+              phx-click="station_reset"
+              phx-value-id={@id}
+            >
+              {gettext("Undo changes")}
+            </button>
+          </p>
+        </fieldset>
+      </form>
+      
+      <p :if={!@up?} id={"station-down-#{@id}"} class="note">
+        {gettext(
+          "Not connected. OpenPairings keeps these; change them when the line is up, or there."
+        )}
+      </p>
+      
+      <p :if={@refused?} id={"station-refused-#{@id}"} class="error">
+        {gettext("OpenPairings did not take those board numbers; it kept what it had.")}
+      </p>
+      
+      <p :if={@note} id={"station-note-#{@id}"} class={elem(@note, 0)}>{elem(@note, 1)}</p>
+    </details>
+    """
+  end
+
+  defp share_text(station) do
+    cats = station["categories"] || []
+    boards = station["boards"] || ""
+
+    case {cats, boards} do
+      {[], ""} ->
+        gettext("prints everything")
+
+      {[], b} ->
+        gettext("prints boards %{list}", list: b)
+
+      {c, ""} ->
+        gettext("prints %{categories}", categories: Enum.join(c, ", "))
+
+      {c, b} ->
+        gettext("prints boards %{list}, %{categories}", list: b, categories: Enum.join(c, ", "))
+    end
   end
 end
