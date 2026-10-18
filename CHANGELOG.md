@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **Stopping no longer ends in a red stack trace.** On the way out the launcher-details process tidied up its secret by asking the application controller, which at that point is busy dying and answers everyone with an exit. The secret goes with the VM anyway, so now it lets the question go unanswered and leaves quietly.
+
 ## [0.3.0] - 2026-10-18
 
 - [Feature] **The room is a choice now, when the tournament has rooms.** OpenPairings sends the room names with the station's settings, and the station's page offers them in a picker instead of a text field that accepted "Hal", "hal" and "The big room, you know the one". A station in a room prints only the boards that room holds, on top of its board numbers and categories. Nothing picked is every room, as before.
