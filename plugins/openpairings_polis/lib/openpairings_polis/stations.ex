@@ -16,13 +16,22 @@ defmodule OpenPairingsPolis.Stations do
 
   `authenticate/2` checks a station's `hello`; `connected/2`,
   `touch/1`, `put_status/2` and `disconnected/2` keep its row honest while
-  the socket lives. Pages and sockets talk over `topic/1` on
+  the socket lives.
+
+  ## What a station prints
+
+  Each station has a name, a room and two filters - categories and board
+  numbers - kept here and nowhere else (`update_settings/2`). The station
+  is told them after `welcome` and every time they change, and may change
+  them itself; the page may too. One row, two editors, last save wins.
+
+  Pages and sockets talk over `topic/1` on
   `PairingsEngine.PubSub`; there is no process of the plugin's own to talk
   through.
   """
   import Ecto.Query
 
-  alias OpenPairingsPolis.{JoinCode, Station}
+  alias OpenPairingsPolis.{BoardRanges, JoinCode, Station}
   alias PairingsEngine.Accounts.Scope
   alias PairingsEngine.Repo
   alias PairingsEngine.Tournaments
@@ -60,7 +69,9 @@ defmodule OpenPairingsPolis.Stations do
     code = :crypto.strong_rand_bytes(10) |> Base.encode32(case: :lower, padding: false)
 
     expires_at =
-      DateTime.utc_now() |> DateTime.add(@code_minutes * 60, :second) |> DateTime.truncate(:second)
+      DateTime.utc_now()
+      |> DateTime.add(@code_minutes * 60, :second)
+      |> DateTime.truncate(:second)
 
     %JoinCode{
       tournament_id: tournament.id,
@@ -116,9 +127,14 @@ defmodule OpenPairingsPolis.Stations do
 
   defp usable_code(code_hash, now) do
     case Repo.get_by(JoinCode, code_hash: code_hash) do
-      nil -> {:error, :not_found}
-      %JoinCode{used_at: %DateTime{}} -> {:error, :gone}
-      %JoinCode{expires_at: at} = join -> if expired?(at, now), do: {:error, :gone}, else: {:ok, join}
+      nil ->
+        {:error, :not_found}
+
+      %JoinCode{used_at: %DateTime{}} ->
+        {:error, :gone}
+
+      %JoinCode{expires_at: at} = join ->
+        if expired?(at, now), do: {:error, :gone}, else: {:ok, join}
     end
   end
 
@@ -153,7 +169,10 @@ defmodule OpenPairingsPolis.Stations do
       nil ->
         Repo.insert!(struct!(%Station{tournament_id: tournament.id, device_id: device}, fields))
 
+      # Joined again: a new key, but the name somebody gave it, its room
+      # and its filters stay. A machine's hostname does not outrank a person.
       station ->
+        fields = if station.name != "", do: Keyword.delete(fields, :name), else: fields
         station |> Ecto.Changeset.change(fields) |> Repo.update!()
     end
   end
@@ -255,6 +274,120 @@ defmodule OpenPairingsPolis.Stations do
     broadcast(station.tournament_id, :polis_stations_changed)
     :ok
   end
+
+  ## ---------- what a station prints ----------
+
+  @doc """
+  What `station` is told about itself (the `settings` frame, less its
+  type): its `name` and `room`, the `categories` and `boards` it prints,
+  and the `categories_available` in its tournament to choose from.
+  """
+  def settings(%Station{} = station, %Tournament{} = tournament) do
+    %{
+      "name" => station.name,
+      "room" => station.room || "",
+      "categories" => effective_categories(station, tournament),
+      "boards" => station.filter_boards || "",
+      "categories_available" => tournament.categories || []
+    }
+  end
+
+  @doc """
+  The filter `OpenPairingsPolis.RoundPayload` applies for `station`:
+  `%{categories: names, boards: ranges}`, each empty for "all". A
+  category the tournament no longer has is dropped rather than left to
+  match nobody: a station that prints too much is a nuisance, one that
+  silently prints nothing is a round without pairings on the wall.
+  """
+  def filter(%Station{} = station, %Tournament{} = tournament) do
+    boards =
+      case BoardRanges.parse(station.filter_boards) do
+        {:ok, ranges} -> ranges
+        {:error, _} -> []
+      end
+
+    %{categories: effective_categories(station, tournament), boards: boards}
+  end
+
+  defp effective_categories(station, tournament) do
+    available = tournament.categories || []
+    Enum.filter(station.filter_categories || [], &(&1 in available))
+  end
+
+  @name_chars 60
+
+  @doc """
+  Changes what `station` is called, where it stands and what it prints,
+  from string-keyed `attrs` (`"name"`, `"room"`, `"categories"`,
+  `"boards"`); a key left out is left alone. Said by the station over its
+  link or by an arbiter on the page, and it is the same change either way:
+  whoever saves last is right, and both hear of it
+  (`{:polis_settings_changed, id}` on `topic/1`).
+
+  An empty name keeps the old one; a category the tournament does not have
+  is dropped; board numbers that do not read are `{:error, {:boards,
+  reason}}` and nothing changes.
+  """
+  def update_settings(%Station{} = station, attrs) when is_map(attrs) do
+    tournament = Tournaments.get_tournament!(station.tournament_id)
+
+    with {:ok, changes} <- settings_changes(station, tournament, attrs) do
+      station = station |> Ecto.Changeset.change(changes) |> Repo.update!()
+      broadcast(station.tournament_id, {:polis_settings_changed, station.id})
+      broadcast(station.tournament_id, :polis_stations_changed)
+      {:ok, station}
+    end
+  end
+
+  @doc "`update_settings/2` for station `id` of `tournament`, as the page asks it."
+  def update_settings(%Tournament{} = tournament, id, attrs) do
+    case Repo.get_by(Station, id: id, tournament_id: tournament.id) do
+      %Station{revoked_at: nil} = station -> update_settings(station, attrs)
+      _gone -> {:error, :not_found}
+    end
+  end
+
+  defp settings_changes(station, tournament, attrs) do
+    available = tournament.categories || []
+
+    changes =
+      []
+      |> put_text(:name, attrs["name"], fn
+        "" -> station.name
+        name -> name
+      end)
+      |> put_text(:room, attrs["room"], & &1)
+
+    changes =
+      case attrs["categories"] do
+        list when is_list(list) ->
+          picked = for c <- list, is_binary(c), c in available, uniq: true, do: c
+          Keyword.put(changes, :filter_categories, picked)
+
+        _absent ->
+          changes
+      end
+
+    case attrs["boards"] do
+      text when is_binary(text) ->
+        case BoardRanges.parse(text) do
+          {:ok, ranges} -> {:ok, Keyword.put(changes, :filter_boards, BoardRanges.format(ranges))}
+          {:error, reason} -> {:error, {:boards, reason}}
+        end
+
+      _absent ->
+        {:ok, changes}
+    end
+  end
+
+  defp put_text(changes, field, value, fun) when is_binary(value) do
+    Keyword.put(changes, field, value |> String.trim() |> String.slice(0, @name_chars) |> fun.())
+  end
+
+  defp put_text(changes, _field, _value, _fun), do: changes
+
+  @doc "Station `id`, as it is now, or nil."
+  def get_station(id), do: Repo.get(Station, id)
 
   ## ---------- pages ----------
 

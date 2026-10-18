@@ -46,11 +46,14 @@ port as the link: `ws://` for an `http://` link, `wss://` for `https://`.
 station                                  server
    |-- hello {v, device, key, name, software} -->|
    |<-- welcome {v, server, tournament} ---------|
+   |<-- settings {name, room, categories, ...} --|   this station's name, room and share
    |<-- round {round: payload} ------------------|   the latest published round, if any
    |-- status {printer, last_printed_round} ---->|   after welcome, and on every change
    |                 ...                         |
    |<-- round {round: payload} ------------------|   a newer round, or the same one changed
    |<-- print {round, what} --------------------|   "Print round N again"
+   |-- settings {name?, room?, ...} ------------>|   changed on the station's page
+   |<-- settings {name, room, ...} --------------|   what the server kept (also after a change there)
    |-- leave ----------------------------------->|   Remove on the station's page
    |<-- leave -----------------------------------|   Remove in OpenPairings
 ```
@@ -65,6 +68,10 @@ Station to server:
   `last_printed_round` (the highest round of this tournament whose sheets
   came out of the printer, or null). Sent after `welcome` and whenever
   either changes; never twice the same.
+- `settings`: any of `name`, `room`, `categories` (a list of category
+  names) and `boards` (board numbers as text, `1-20, 35, 40-45`). A key
+  left out is left alone. Sent only while the line is up: the server keeps
+  these, and a change it cannot hear did not happen.
 - `leave`: the station is removing the tournament.
 
 Server to station:
@@ -74,6 +81,12 @@ Server to station:
   forget the tournament; the others are shown and tried again in a minute
   (a key the server does not know today may be a server restored from
   yesterday's backup tomorrow).
+- `settings`: `name`, `room`, `categories`, `boards` and
+  `categories_available` (the tournament's categories, to tick from), after
+  `welcome` and whenever any of them changes - by the station's own
+  `settings`, or in OpenPairings. Never twice the same in a row, except
+  with `error` (`boards`): a change turned down, sent with what still
+  holds. The station shows what this says, not what it asked for.
 - `round`: `round` is the payload below.
 - `print`: `round` and `what` (`pairings`, `placecards` or `both`). Acted
   on only for the round the station holds.
@@ -113,6 +126,18 @@ then 2, 4, ... up to 30. After a refusal: 60.
   a known round with the same `rev` is a reconnect and does nothing.
 - `spoken` and `club` are not printed by Polis; the announcer uses the
   first.
+- `selection`, present only when the station prints part of the round:
+  `room`, `boards` (text) and `categories`. The server has already left
+  out the other boards; Polis prints `selection` in the sheet's heading,
+  and prints nothing for a round whose `boards` came out empty.
+
+## A station's share
+
+A board is in a station's share when its number is in the station's board
+numbers and either player is in one of its categories; a bye counts its
+one player. Each test passes when its list is empty. A board's number is
+the whole number its label starts with: `12` is 12, a team board `3.1` is
+3, a shared fixed table `1001/1002` is both.
 
 ## What Polis does not do with it
 

@@ -17,17 +17,18 @@ defmodule OpenPairingsPolis.RoundPayload do
   changed?" is a string comparison and the station can say "already
   printed that" for free.
   """
+  alias OpenPairingsPolis.BoardRanges
   alias PairingsEngine.{PairingDisplay, Repo, Standings, Tournaments}
   alias PairingsEngine.Tournaments.{Player, Round, Tournament}
 
   @doc """
   The latest published round's payload, `{:ok, number, payload}`; `:none`
-  while nothing is public.
+  while nothing is public. `selection` as for `build/3`.
   """
-  def latest(%Tournament{} = tournament) do
+  def latest(%Tournament{} = tournament, selection \\ nil) do
     case Tournaments.latest_published_round_number(tournament) do
       0 -> :none
-      n -> with {:ok, payload} <- build(tournament, n), do: {:ok, n, payload}
+      n -> with {:ok, payload} <- build(tournament, n, selection), do: {:ok, n, payload}
     end
   end
 
@@ -35,14 +36,23 @@ defmodule OpenPairingsPolis.RoundPayload do
   Round `number`'s payload, `{:ok, map}` with string keys ready for JSON, or
   `:none` when that round is not paired or not public. Not public means not
   sent, whoever asks.
+
+  `selection` is one station's share of the round (nil for all of it):
+  `%{room:, categories:, boards:}` as `OpenPairingsPolis.Stations.filter/2`
+  and the station's room make it. A board is kept when its number is in
+  `boards` and either player is in one of `categories` - a bye's one
+  player, alone - each test passing when its list is empty. A selection
+  that is not "everything" is written into the payload as `selection`
+  (`room`, `boards`, `categories`), so the sheet can say which part of the
+  hall it is for, and so the `rev` changes when the part does.
   """
-  def build(%Tournament{} = tournament, number) when is_integer(number) do
+  def build(%Tournament{} = tournament, number, selection \\ nil) when is_integer(number) do
     tournament = Repo.preload(tournament, :user)
 
     case Tournaments.get_round(tournament.id, number) do
       %Round{} = round ->
         if Tournaments.round_published?(tournament, round),
-          do: {:ok, payload(tournament, round)},
+          do: {:ok, payload(tournament, round, selection)},
           else: :none
 
       nil ->
@@ -50,13 +60,14 @@ defmodule OpenPairingsPolis.RoundPayload do
     end
   end
 
-  defp payload(tournament, round) do
+  defp payload(tournament, round, selection) do
     scores = Standings.player_scores_before_round(tournament, round.number)
 
     boards =
       round.pairings
       |> Enum.reject(& &1.hidden)
       |> PairingDisplay.with_display_boards()
+      |> Enum.filter(&selected?(&1, selection))
       |> Enum.map(fn %{pairing: p, board: board} ->
         %{
           "board" => to_string(board),
@@ -82,11 +93,46 @@ defmodule OpenPairingsPolis.RoundPayload do
       "boards" => boards
     }
 
-    Map.put(body, "rev", rev(body))
+    body
+    |> put_selection(selection)
+    |> then(&Map.put(&1, "rev", rev(&1)))
+  end
+
+  defp selected?(_row, nil), do: true
+
+  defp selected?(%{pairing: p, board: board}, selection) do
+    BoardRanges.member?(selection.boards, board) and
+      in_categories?(selection.categories, [p.white_player, p.black_player])
+  end
+
+  defp in_categories?([], _players), do: true
+
+  defp in_categories?(categories, players) do
+    Enum.any?(players, fn
+      %Player{categories: tags} -> Enum.any?(tags || [], &(&1 in categories))
+      nil -> false
+    end)
+  end
+
+  defp put_selection(body, nil), do: body
+
+  defp put_selection(body, selection) do
+    room = Map.get(selection, :room) || ""
+
+    if room == "" and selection.boards == [] and selection.categories == [] do
+      body
+    else
+      Map.put(body, "selection", %{
+        "room" => room,
+        "boards" => BoardRanges.format(selection.boards),
+        "categories" => selection.categories
+      })
+    end
   end
 
   @doc "SHA-256 (hex) of the payload's JSON. Maps this small encode in key order, so it is stable."
-  def rev(body), do: body |> Jason.encode!() |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+  def rev(body),
+    do: body |> Jason.encode!() |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
 
   defp player(nil, _tournament, _scores), do: nil
 

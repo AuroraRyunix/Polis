@@ -12,7 +12,12 @@ defmodule Polis.Link do
      `Polis.Station.round_received/2`, which decides what to print.
   3. `print` - the arbiter pressed "Print round N again" in OpenPairings - goes to
      `Polis.Station.print_command/3`.
-  4. The line goes: try again after a second, then two, up to thirty. A
+  4. `settings` - the station's name, room and filters as the server has
+     them, after `welcome` and whenever they change - goes to
+     `Polis.Station.settings_received/2`. A change made on this page goes
+     the other way (`send_settings/2`), and comes back as `settings` once
+     the server has kept it: the server's copy is the one that counts.
+  5. The line goes: try again after a second, then two, up to thirty. A
      refusal other than `revoked` is said on the page and tried again in a
      minute: a key the server does not know today may be a server restored
      from yesterday's backup tomorrow.
@@ -71,6 +76,20 @@ defmodule Polis.Link do
     :exit, _reason -> :ok
   end
 
+  @doc """
+  Sends a change to the station's name, room or filters to the server of
+  tournament `id`: `:ok`, or `{:error, :down}` when the line is not up -
+  the server keeps the truth, so a change is made while it can hear it.
+  """
+  def send_settings(id, fields) do
+    case whereis(id) do
+      nil -> {:error, :down}
+      pid -> GenServer.call(pid, {:settings, fields})
+    end
+  catch
+    :exit, _reason -> {:error, :down}
+  end
+
   # --- the process ---------------------------------------------------------------
 
   @impl true
@@ -105,6 +124,13 @@ defmodule Polis.Link do
   end
 
   def handle_call(:leave, _from, state), do: {:reply, :ok, state}
+
+  def handle_call({:settings, fields}, _from, %{up?: true} = state) do
+    state = push(state, Protocol.settings(fields))
+    {:reply, :ok, after_frames(state)}
+  end
+
+  def handle_call({:settings, _fields}, _from, state), do: {:reply, {:error, :down}, state}
 
   @impl true
   def handle_info(:connect, %{conn: nil} = state) do
@@ -254,6 +280,11 @@ defmodule Polis.Link do
     %{state | up?: true, error: nil, backoff: 1_000, sent_status: nil}
     |> send_status()
     |> tap(fn _ -> Polis.Station.broadcast_links() end)
+  end
+
+  defp message(%{"type" => "settings"} = settings, state) do
+    Polis.Station.settings_received(state.id, settings)
+    state
   end
 
   defp message(%{"type" => "round", "round" => payload}, state) when is_map(payload) do

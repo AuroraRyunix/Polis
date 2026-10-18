@@ -24,6 +24,16 @@ defmodule Polis.Station do
   queues what it names, for the round it names, when that is the round
   this station holds.
 
+  ## Its name, its room, and its share of the round
+
+  Per tournament, as the server has them (`settings_received/2`): what the
+  station is called there, the room it stands in, and which categories
+  and board numbers it prints. The server sends only this station's share
+  of each round, so nothing is filtered here; a round with no board for
+  this station is not printed at all, rather than printed as an empty
+  sheet. `change_settings/2` asks the server for a change; what shows is
+  what the server answers.
+
   ## What the station tells the servers
 
   `status` with `printer` (the chosen printer's name, or null) and
@@ -32,7 +42,7 @@ defmodule Polis.Station do
   whenever either changes (`broadcast_status/0`).
   """
 
-  alias Polis.{Join, Link, Protocol, Queue, State}
+  alias Polis.{BoardRanges, Join, Link, Protocol, Queue, State}
 
   @status_topic "station:status"
   @links_topic "station:links"
@@ -138,8 +148,11 @@ defmodule Polis.Station do
           _both -> [:pairings, :placecards]
         end
 
-      # Asked for by name, so printed whatever the switches say.
-      for w <- whats, do: Queue.enqueue(job_attrs(t, payload, w))
+      # Asked for by name, so printed whatever the switches say - but not
+      # an empty sheet for a station none of whose boards are in it.
+      if for_this_station?(payload),
+        do: for(w <- whats, do: Queue.enqueue(job_attrs(t, payload, w)))
+
       :ok
     else
       _other -> :unknown_round
@@ -168,8 +181,66 @@ defmodule Polis.Station do
   end
 
   defp enqueue_round(t, payload, whats, opts \\ []) do
-    for w <- whats, Keyword.get(opts, :force, false) or switch_on?(t, w) do
+    for w <- whats,
+        for_this_station?(payload),
+        Keyword.get(opts, :force, false) or switch_on?(t, w) do
       Queue.enqueue(job_attrs(t, payload, w))
+    end
+  end
+
+  @doc """
+  Whether a round has anything for this station. A share that leaves no
+  board (the station prints boards 40-60 of a 30-board round) prints
+  nothing; a whole round always prints, empty or not, because that is a
+  sheet saying "no boards", which somebody may want on the wall.
+  """
+  def for_this_station?(%{"selection" => %{}, "boards" => []}), do: false
+  def for_this_station?(_payload), do: true
+
+  # --- name, room and share ---------------------------------------------------------
+
+  @doc """
+  A `settings` frame from the server of tournament `id`: kept as the
+  tournament's `"station"`, which is what the page shows.
+  """
+  def settings_received(id, frame) do
+    settings = %{
+      "name" => text(frame["name"]),
+      "room" => text(frame["room"]),
+      "categories" => strings(frame["categories"]),
+      "boards" => text(frame["boards"]),
+      "categories_available" => strings(frame["categories_available"]),
+      "error" => frame["error"]
+    }
+
+    State.update_tournament(id, &Map.put(&1, "station", settings))
+    broadcast_links()
+  end
+
+  defp text(v) when is_binary(v), do: v
+  defp text(_v), do: ""
+
+  defp strings(list) when is_list(list), do: Enum.filter(list, &is_binary/1)
+  defp strings(_v), do: []
+
+  @doc """
+  Asks the server of tournament `id` to change this station's name, room,
+  categories or board numbers (string keys; categories a list). Board
+  numbers that do not read are `{:error, {:boards, reason}}` before
+  anything is sent; a line that is down is `{:error, :down}`.
+  """
+  def change_settings(id, params) do
+    fields = %{
+      "name" => String.trim(params["name"] || ""),
+      "room" => String.trim(params["room"] || ""),
+      "categories" =>
+        params |> Map.get("categories", []) |> List.wrap() |> Enum.reject(&(&1 == "")),
+      "boards" => params["boards"] || ""
+    }
+
+    case BoardRanges.parse(fields["boards"]) do
+      {:ok, ranges} -> Link.send_settings(id, %{fields | "boards" => BoardRanges.format(ranges)})
+      {:error, reason} -> {:error, {:boards, reason}}
     end
   end
 

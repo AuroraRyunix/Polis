@@ -4,7 +4,8 @@ defmodule Polis.FakeServer do
   `POST /p/polis/join/:code` and the socket at `/p/polis/link`, on a port of
   its own. It remembers who joined, every `status` the station sent, and
   whether it said `leave`; it can be given a round to send after
-  `welcome`, told to refuse a key or to have revoked it, and made to push
+  `welcome` and the station's `settings` to send before it (it then keeps
+  what the station changes and tells it back, as OpenPairings does), told to refuse a key or to have revoked it, and made to push
   any frame down the open sockets.
 
   Started per test (`start/1`); `down/1` and `up/1` take its listener away
@@ -24,6 +25,8 @@ defmodule Polis.FakeServer do
           statuses: [],
           sockets: [],
           round: nil,
+          settings: nil,
+          settings_sent: [],
           revoked: false,
           hellos: 0,
           left?: false
@@ -70,6 +73,23 @@ defmodule Polis.FakeServer do
 
   @doc "The `status` frames received, oldest first."
   def statuses(server), do: server |> get(:statuses) |> Enum.reverse()
+
+  @doc "The `settings` frames the station sent, oldest first."
+  def settings_sent(server), do: server |> get(:settings_sent) |> Enum.reverse()
+
+  @doc "What a server keeps for a station that has filtered nothing yet."
+  def settings(fields \\ %{}) do
+    Map.merge(
+      %{
+        "name" => "Hall PC",
+        "room" => "",
+        "categories" => [],
+        "boards" => "",
+        "categories_available" => ["U12", "Women"]
+      },
+      fields
+    )
+  end
 
   @doc "Sends a frame down every open socket."
   def push(server, frame), do: for(pid <- get(server, :sockets), do: send(pid, {:push, frame}))

@@ -6,11 +6,14 @@ defmodule Polis.Protocol do
   plugin (`plugins/openpairings_polis`) is the other end.
 
   Polis to server: `hello` (always first, with the key), `status`
-  (`printer`, `last_printed_round`), `leave`.
+  (`printer`, `last_printed_round`), `settings` (any of `name`, `room`,
+  `categories`, `boards`: a change the station's page asked for), `leave`.
 
-  Server to Polis: `welcome`, `refused` (`version`, `key`, `revoked`),
-  `round` (the round payload), `leave`, and `print` (`round`, `what`:
-  `pairings`, `placecards` or `both`).
+  Server to Polis: `welcome`, `settings` (`name`, `room`, `categories`,
+  `boards`, `categories_available`, and `error` when a change was turned
+  down), `refused` (`version`, `key`, `revoked`), `round` (the round
+  payload), `leave`, and `print` (`round`, `what`: `pairings`,
+  `placecards` or `both`).
   """
 
   @version 1
@@ -41,6 +44,10 @@ defmodule Polis.Protocol do
 
   def status(fields) when is_map(fields), do: Map.put(fields, "type", "status")
   def leave, do: %{"type" => "leave"}
+
+  @doc "A change to the station's name, room or filters, for the server to keep."
+  def settings(fields) when is_map(fields),
+    do: fields |> Map.take(~w(name room categories boards)) |> Map.put("type", "settings")
 
   @doc "What this program calls itself on the wire: `polis 0.1.0`."
   def software, do: "polis " <> to_string(Application.spec(:polis, :vsn))

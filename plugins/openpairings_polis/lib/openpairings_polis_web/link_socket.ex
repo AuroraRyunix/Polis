@@ -7,8 +7,15 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
 
   The first frame must be `hello` with the station's key; until then
   nothing else is listened to, and a link that says nothing for ten
-  seconds is closed. After `welcome` the station gets the latest published
-  round, if there is one.
+  seconds is closed. After `welcome` the station gets its `settings` (name,
+  room, what it prints) and then the latest published round, if there is
+  one - cut down to the station's share of it
+  (`OpenPairingsPolis.RoundPayload.build/3`).
+
+  The station may send `settings` back to change its name, room or
+  filters; so may the page. Either way the row changes, the topic hears
+  `{:polis_settings_changed, id}`, and this socket sends the station what
+  is now true - and the round again, when its share of it changed.
 
   It listens on two topics: the core's tournament topic, where any change
   at all is a nudge to look again (debounced, `@debounce_ms`), and the
@@ -42,6 +49,7 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
        ref: :crypto.strong_rand_bytes(9) |> Base.url_encode64(padding: false),
        last_rev: nil,
        last_round: 0,
+       last_settings: nil,
        timer: nil,
        heard: now_ms(),
        touched: now_ms()
@@ -84,6 +92,23 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
 
   defp frame(%{"type" => "ping"}, state), do: push([%{type: "pong"}], touch(state))
 
+  # The station renaming itself, moving rooms, or choosing what it prints.
+  defp frame(%{"type" => "settings"} = settings, state) do
+    case Stations.update_settings(state.station, settings) do
+      {:ok, station} ->
+        state = %{state | station: station, touched: now_ms()}
+        {settings, state} = settings_frames(state)
+        {rounds, state} = round_frames(state)
+        push(settings ++ rounds, state)
+
+      # Board numbers that do not read: nothing changes, and the station is
+      # told what still holds, with the reason.
+      {:error, {:boards, _reason}} ->
+        {[frame], state} = settings_frames(%{state | last_settings: nil})
+        push([Map.put(frame, "error", "boards")], state)
+    end
+  end
+
   defp frame(_other, state), do: {:ok, state}
 
   defp version(@protocol), do: :ok
@@ -104,8 +129,9 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
     }
 
     state = %{state | station: station, touched: now_ms()}
+    {settings, state} = settings_frames(state)
     {rounds, state} = round_frames(state)
-    push([welcome | rounds], state)
+    push([welcome | settings] ++ rounds, state)
   end
 
   defp refuse(reason, state) do
@@ -143,9 +169,25 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
 
   def handle_info(:recompute, %{station: nil} = state), do: {:ok, %{state | timer: nil}}
 
+  # Any change to the tournament may be a category added or renamed, so
+  # the settings are looked at again with the round.
   def handle_info(:recompute, state) do
-    {frames, state} = round_frames(%{state | timer: nil})
-    push(frames, state)
+    {settings, state} = settings_frames(%{state | timer: nil})
+    {rounds, state} = round_frames(state)
+    push(settings ++ rounds, state)
+  end
+
+  # The page (or this very socket) changed the row: say what is true now.
+  def handle_info({:polis_settings_changed, id}, %{station: %{id: id}} = state) do
+    case Stations.get_station(id) do
+      %{revoked_at: nil} = station ->
+        {settings, state} = settings_frames(%{state | station: station})
+        {rounds, state} = round_frames(state)
+        push(settings ++ rounds, state)
+
+      _gone ->
+        {:ok, state}
+    end
   end
 
   # "Print again": make sure the station has the round as it stands now,
@@ -176,10 +218,32 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
   # its rev is the one sent last.
   defp round_frames(state) do
     with %{} = tournament <- Tournaments.get_tournament(state.station.tournament_id),
-         {:ok, number, payload} <- RoundPayload.latest(tournament),
+         {:ok, number, payload} <- RoundPayload.latest(tournament, selection(state, tournament)),
          true <- number >= state.last_round,
          false <- payload["rev"] == state.last_rev do
-      {[%{type: "round", round: payload}], %{state | last_rev: payload["rev"], last_round: number}}
+      {[%{type: "round", round: payload}],
+       %{state | last_rev: payload["rev"], last_round: number}}
+    else
+      _ -> {[], state}
+    end
+  end
+
+  # The station's share, from the row as it is now: the page may have
+  # changed it since this socket last looked.
+  defp selection(state, tournament) do
+    station = Stations.get_station(state.station.id) || state.station
+
+    station
+    |> Stations.filter(tournament)
+    |> Map.put(:room, station.room || "")
+  end
+
+  # The settings frame, when it differs from the last one sent.
+  defp settings_frames(state) do
+    with %{} = tournament <- Tournaments.get_tournament(state.station.tournament_id),
+         settings = Stations.settings(state.station, tournament),
+         false <- settings == state.last_settings do
+      {[Map.put(settings, "type", "settings")], %{state | last_settings: settings}}
     else
       _ -> {[], state}
     end
