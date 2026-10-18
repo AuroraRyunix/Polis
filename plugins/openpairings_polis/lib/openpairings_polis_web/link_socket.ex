@@ -106,6 +106,11 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
       {:error, {:boards, _reason}} ->
         {[frame], state} = settings_frames(%{state | last_settings: nil})
         push([Map.put(frame, "error", "boards")], state)
+
+      # A room the tournament does not have: the same, with that reason.
+      {:error, {:room, _reason}} ->
+        {[frame], state} = settings_frames(%{state | last_settings: nil})
+        push([Map.put(frame, "error", "room")], state)
     end
   end
 
@@ -169,8 +174,8 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
 
   def handle_info(:recompute, %{station: nil} = state), do: {:ok, %{state | timer: nil}}
 
-  # Any change to the tournament may be a category added or renamed, so
-  # the settings are looked at again with the round.
+  # Any change to the tournament may be a category or a room added or
+  # renamed, so the settings are looked at again with the round.
   def handle_info(:recompute, state) do
     {settings, state} = settings_frames(%{state | timer: nil})
     {rounds, state} = round_frames(state)
@@ -232,10 +237,7 @@ defmodule OpenPairingsPolisWeb.LinkSocket do
   # changed it since this socket last looked.
   defp selection(state, tournament) do
     station = Stations.get_station(state.station.id) || state.station
-
-    station
-    |> Stations.filter(tournament)
-    |> Map.put(:room, station.room || "")
+    Stations.filter(station, tournament)
   end
 
   # The settings frame, when it differs from the last one sent.

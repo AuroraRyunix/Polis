@@ -17,8 +17,7 @@ defmodule OpenPairingsPolis.RoundPayload do
   changed?" is a string comparison and the station can say "already
   printed that" for free.
   """
-  alias OpenPairingsPolis.BoardRanges
-  alias PairingsEngine.{PairingDisplay, Repo, Standings, Tournaments}
+  alias PairingsEngine.{BoardRanges, PairingDisplay, Repo, Rooms, Standings, Tournaments}
   alias PairingsEngine.Tournaments.{Player, Round, Tournament}
 
   @doc """
@@ -39,9 +38,10 @@ defmodule OpenPairingsPolis.RoundPayload do
 
   `selection` is one station's share of the round (nil for all of it):
   `%{room:, categories:, boards:}` as `OpenPairingsPolis.Stations.filter/2`
-  and the station's room make it. A board is kept when its number is in
+  makes it. A board is kept when it is in the station's `room` (a room of
+  the tournament, `PairingsEngine.Rooms.holds?/2`), its number is in
   `boards` and either player is in one of `categories` - a bye's one
-  player, alone - each test passing when its list is empty. A selection
+  player, alone - each test passing when it is nil or empty. A selection
   that is not "everything" is written into the payload as `selection`
   (`room`, `boards`, `categories`), so the sheet can say which part of the
   hall it is for, and so the `rev` changes when the part does.
@@ -101,9 +101,13 @@ defmodule OpenPairingsPolis.RoundPayload do
   defp selected?(_row, nil), do: true
 
   defp selected?(%{pairing: p, board: board}, selection) do
-    BoardRanges.member?(selection.boards, board) and
+    in_room?(Map.get(selection, :room), board) and
+      BoardRanges.member?(selection.boards, board) and
       in_categories?(selection.categories, [p.white_player, p.black_player])
   end
+
+  defp in_room?(nil, _board), do: true
+  defp in_room?(room, board), do: Rooms.holds?(room, board)
 
   defp in_categories?([], _players), do: true
 
@@ -117,7 +121,11 @@ defmodule OpenPairingsPolis.RoundPayload do
   defp put_selection(body, nil), do: body
 
   defp put_selection(body, selection) do
-    room = Map.get(selection, :room) || ""
+    room =
+      case Map.get(selection, :room) do
+        %{name: name} -> name
+        _none -> ""
+      end
 
     if room == "" and selection.boards == [] and selection.categories == [] do
       body

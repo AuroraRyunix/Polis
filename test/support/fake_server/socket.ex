@@ -70,11 +70,17 @@ defmodule Polis.FakeServer.Socket do
       Agent.get_and_update(state.agent, fn s ->
         s = %{s | settings_sent: [change | s.settings_sent]}
 
-        if change["boards"] == "bad" do
-          {Map.put(s.settings || %{}, "error", "boards"), s}
-        else
-          kept = Map.merge(s.settings || %{}, change)
-          {kept, %{s | settings: kept}}
+        cond do
+          change["boards"] == "bad" ->
+            {Map.put(s.settings || %{}, "error", "boards"), s}
+
+          unknown_room?(s.settings || %{}, change["room"]) ->
+            {Map.put(s.settings || %{}, "error", "room"), s}
+
+          true ->
+            change = canonical_room(s.settings || %{}, change)
+            kept = Map.merge(s.settings || %{}, change)
+            {kept, %{s | settings: kept}}
         end
       end)
 
@@ -87,6 +93,29 @@ defmodule Polis.FakeServer.Socket do
   end
 
   defp handle(_frame, state), do: {:ok, state}
+
+  # With `rooms_available` in the kept settings a room is "", one of them
+  # (trimmed, any case) or the legacy text the server already holds.
+  defp unknown_room?(%{"rooms_available" => rooms} = kept, room) when is_binary(room) do
+    room != "" and room != kept["room"] and is_nil(match_room(rooms, room))
+  end
+
+  defp unknown_room?(_kept, _room), do: false
+
+  defp canonical_room(%{"rooms_available" => rooms}, %{"room" => room} = change)
+       when is_binary(room) do
+    case match_room(rooms, room) do
+      nil -> change
+      name -> %{change | "room" => name}
+    end
+  end
+
+  defp canonical_room(_kept, change), do: change
+
+  defp match_room(rooms, room) do
+    wanted = room |> String.trim() |> String.downcase()
+    Enum.find(rooms, &(String.downcase(&1) == wanted))
+  end
 
   # The test that started the server may be gone while a line it opened is
   # still saying something; that is not this test's failure.

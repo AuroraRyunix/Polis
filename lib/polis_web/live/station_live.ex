@@ -732,7 +732,10 @@ defmodule PolisWeb.StationLive do
         available: station["categories_available"] || [],
         picked: assigns.params["categories"] || [],
         boards: BoardRanges.parse(assigns.params["boards"]),
-        refused?: station["error"] == "boards"
+        refused?: station["error"] == "boards",
+        room_refused?: station["error"] == "room",
+        rooms: station["rooms_available"],
+        room_stray?: stray_room?(assigns.params["room"], station["rooms_available"])
       )
 
     ~H"""
@@ -757,7 +760,7 @@ defmodule PolisWeb.StationLive do
             />
           </label>
 
-          <label>
+          <label :if={@rooms == nil}>
             {gettext("Room")}
             <input
               id={"station-room-#{@id}"}
@@ -768,6 +771,27 @@ defmodule PolisWeb.StationLive do
               placeholder={gettext("e.g. Main hall")}
             />
           </label>
+
+          <label :if={@rooms != nil}>
+            {gettext("Room")}
+            <select id={"station-room-#{@id}"} name="room">
+              <option value="" selected={@params["room"] in ["", nil]}>{gettext("No room")}</option>
+              <option :if={@room_stray?} value={@params["room"]} selected>
+                {gettext("%{room} (not a room of this tournament)", room: @params["room"])}
+              </option>
+              <option :for={r <- @rooms} value={r} selected={r == @params["room"]}>{r}</option>
+            </select>
+          </label>
+
+          <p :if={@rooms == []} id={"station-rooms-none-#{@id}"} class="note">
+            {gettext(
+              "This tournament has no rooms. They are set in OpenPairings, under Settings, Rooms."
+            )}
+          </p>
+
+          <p :if={@room_stray?} id={"station-room-stray-#{@id}"} class="note">
+            {gettext("That room is only a label; it filters nothing until a room is picked.")}
+          </p>
 
           <div :if={@available != []} id={"station-categories-#{@id}"} class="ticks">
             <span>{gettext("Categories")}</span> <input type="hidden" name="categories[]" value="" />
@@ -803,7 +827,7 @@ defmodule PolisWeb.StationLive do
 
           <p class="note">
             {gettext(
-              "Nothing ticked and no board numbers: everything. A board prints when its number is in the list and either player is in a ticked category."
+              "Nothing ticked, no board numbers and no room: everything. A board prints when it is in the room, its number is in the list and either player is in a ticked category."
             )}
           </p>
 
@@ -832,10 +856,19 @@ defmodule PolisWeb.StationLive do
         {gettext("OpenPairings did not take those board numbers; it kept what it had.")}
       </p>
 
+      <p :if={@room_refused?} id={"station-room-refused-#{@id}"} class="error">
+        {gettext("That room is not one of this tournament's rooms.")}
+      </p>
+
       <p :if={@note} id={"station-note-#{@id}"} class={elem(@note, 0)}>{elem(@note, 1)}</p>
     </details>
     """
   end
+
+  defp stray_room?(room, rooms) when is_binary(room) and room != "" and is_list(rooms),
+    do: room not in rooms
+
+  defp stray_room?(_room, _rooms), do: false
 
   defp share_text(station) do
     cats = station["categories"] || []

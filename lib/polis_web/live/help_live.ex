@@ -87,14 +87,17 @@ defmodule PolisWeb.HelpLive do
         <section id="help-share">
           <h2>Wat dit station afdrukt</h2>
           <p>
-            Een zaal met twee printers wil niet twee keer dezelfde lijst. Onder "Dit station" bij een toernooi geef je het station een naam en een ruimte, en kies je wat het afdrukt: categorieën (vinkjes) en bordnummers, zoals <span class="mono">1-20, 35, 40-45</span>. Onder het veld staat meteen hoe Polis de nummers leest.
+            Een zaal met twee printers wil niet twee keer dezelfde lijst. Onder "Dit station" bij een toernooi geef je het station een naam en kies je een ruimte van het toernooi, en kies je wat het afdrukt: categorieën (vinkjes) en bordnummers, zoals <span class="mono">1-20, 35, 40-45</span>. Onder het veld staat meteen hoe Polis de nummers leest.
           </p>
           <ul class="prose">
             <li>
-              Een bord wordt afgedrukt als zijn nummer in de lijst staat én een van beide spelers in een aangevinkte categorie zit. Bij een bye telt de ene speler die er is.
+              Een bord wordt afgedrukt als het in de ruimte van dit station ligt, zijn nummer in de lijst staat én een van beide spelers in een aangevinkte categorie zit. Bij een bye telt de ene speler die er is.
             </li>
             <li>
-              Niets aangevinkt is elke categorie; geen bordnummers is elk bord. Niets ingesteld is dus alles, zoals vroeger.
+              De ruimtes maakt de arbiter in OpenPairings (Instellingen, Ruimtes); hier kies je er een uit de lijst, of "Geen ruimte". Bij een server zonder ruimtes is het een vrij tekstveld, en een ruimte die niet bij het toernooi hoort, is alleen een naam: die filtert niets tot je een echte ruimte kiest.
+            </li>
+            <li>
+              Niets aangevinkt is elke categorie; geen bordnummers is elk bord; geen ruimte is elke ruimte. Niets ingesteld is dus alles, zoals vroeger.
             </li>
             <li>
               Het nummer van een bord is het getal waarmee het begint: bord 3.1 van een teamtoernooi is 3.
@@ -217,14 +220,17 @@ defmodule PolisWeb.HelpLive do
         <section id="help-share">
           <h2>What this station prints</h2>
           <p>
-            A hall with two printers does not want the same list twice. Under "This station" by a tournament you give the station a name and a room, and choose what it prints: categories (tick boxes) and board numbers, like <span class="mono">1-20, 35, 40-45</span>. Below the field, Polis says at once how it reads the numbers.
+            A hall with two printers does not want the same list twice. Under "This station" by a tournament you give the station a name and pick one of the tournament's rooms, and choose what it prints: categories (tick boxes) and board numbers, like <span class="mono">1-20, 35, 40-45</span>. Below the field, Polis says at once how it reads the numbers.
           </p>
           <ul class="prose">
             <li>
-              A board prints when its number is in the list and either player is in a ticked category. For a bye, the one player there is counts.
+              A board prints when it is in this station's room, its number is in the list and either player is in a ticked category. For a bye, the one player there is counts.
             </li>
             <li>
-              Nothing ticked is every category; no board numbers is every board. Nothing set is therefore everything, as before.
+              The rooms are made by the arbiter in OpenPairings (Settings, Rooms); here you pick one from the list, or "No room". Against a server without rooms it is a free text field, and a room that is not one of the tournament's is only a label: it filters nothing until you pick a real room.
+            </li>
+            <li>
+              Nothing ticked is every category; no board numbers is every board; no room is every room. Nothing set is therefore everything, as before.
             </li>
             <li>
               A board's number is the number it starts with: board 3.1 of a team tournament is 3.

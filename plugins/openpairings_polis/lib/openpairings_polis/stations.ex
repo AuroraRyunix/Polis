@@ -20,8 +20,11 @@ defmodule OpenPairingsPolis.Stations do
 
   ## What a station prints
 
-  Each station has a name, a room and two filters - categories and board
-  numbers - kept here and nowhere else (`update_settings/2`). The station
+  Each station has a name, a room - one of the tournament's own
+  (`PairingsEngine.Rooms`), by id, so a rename follows it - and two
+  filters, categories and board numbers, kept here and nowhere else
+  (`update_settings/2`). A room typed as free text before the tournament
+  had rooms stays as a label and restricts nothing. The station
   is told them after `welcome` and every time they change, and may change
   them itself; the page may too. One row, two editors, last save wins.
 
@@ -31,9 +34,9 @@ defmodule OpenPairingsPolis.Stations do
   """
   import Ecto.Query
 
-  alias OpenPairingsPolis.{BoardRanges, JoinCode, Station}
+  alias OpenPairingsPolis.{JoinCode, Station}
   alias PairingsEngine.Accounts.Scope
-  alias PairingsEngine.Repo
+  alias PairingsEngine.{BoardRanges, Repo, Rooms}
   alias PairingsEngine.Tournaments
   alias PairingsEngine.Tournaments.Tournament
 
@@ -279,22 +282,47 @@ defmodule OpenPairingsPolis.Stations do
 
   @doc """
   What `station` is told about itself (the `settings` frame, less its
-  type): its `name` and `room`, the `categories` and `boards` it prints,
-  and the `categories_available` in its tournament to choose from.
+  type): its `name` and `room` (`room_name/2`), the `categories` and
+  `boards` it prints, and the `categories_available` and
+  `rooms_available` in its tournament to choose from.
   """
   def settings(%Station{} = station, %Tournament{} = tournament) do
     %{
       "name" => station.name,
-      "room" => station.room || "",
+      "room" => room_name(station, tournament),
       "categories" => effective_categories(station, tournament),
       "boards" => station.filter_boards || "",
-      "categories_available" => tournament.categories || []
+      "categories_available" => tournament.categories || [],
+      "rooms_available" => Rooms.names(tournament)
     }
   end
 
   @doc """
+  The tournament room `station` stands in, as `PairingsEngine.Rooms.list/1`
+  gives it, or nil: no room, a room since removed, or only a free-text
+  label from before the tournament had rooms.
+  """
+  def room(%Station{room_id: id}, %Tournament{} = tournament), do: Rooms.get(tournament, id)
+
+  @doc """
+  The station's room as words: the room's name as it is now (renamed or
+  not), the free-text label of a station from before rooms, or "".
+  """
+  def room_name(%Station{} = station, %Tournament{} = tournament) do
+    case room(station, tournament) do
+      %{name: name} -> name
+      nil -> if (station.room_id || "") == "", do: station.room || "", else: ""
+    end
+  end
+
+  @doc "Whether the station's room is only a label: free text that names no room of the tournament."
+  def legacy_room?(%Station{} = station, %Tournament{} = tournament),
+    do: room(station, tournament) == nil and room_name(station, tournament) != ""
+
+  @doc """
   The filter `OpenPairingsPolis.RoundPayload` applies for `station`:
-  `%{categories: names, boards: ranges}`, each empty for "all". A
+  `%{room: room | nil, categories: names, boards: ranges}`, nil or empty
+  for "all". A
   category the tournament no longer has is dropped rather than left to
   match nobody: a station that prints too much is a nuisance, one that
   silently prints nothing is a round without pairings on the wall.
@@ -306,7 +334,11 @@ defmodule OpenPairingsPolis.Stations do
         {:error, _} -> []
       end
 
-    %{categories: effective_categories(station, tournament), boards: boards}
+    %{
+      room: room(station, tournament),
+      categories: effective_categories(station, tournament),
+      boards: boards
+    }
   end
 
   defp effective_categories(station, tournament) do
@@ -318,8 +350,8 @@ defmodule OpenPairingsPolis.Stations do
 
   @doc """
   Changes what `station` is called, where it stands and what it prints,
-  from string-keyed `attrs` (`"name"`, `"room"`, `"categories"`,
-  `"boards"`); a key left out is left alone. Said by the station over its
+  from string-keyed `attrs` (`"name"`, `"room"` or `"room_id"`,
+  `"categories"`, `"boards"`); a key left out is left alone. Said by the station over its
   link or by an arbiter on the page, and it is the same change either way:
   whoever saves last is right, and both hear of it
   (`{:polis_settings_changed, id}` on `topic/1`).
@@ -327,6 +359,13 @@ defmodule OpenPairingsPolis.Stations do
   An empty name keeps the old one; a category the tournament does not have
   is dropped; board numbers that do not read are `{:error, {:boards,
   reason}}` and nothing changes.
+
+  The room: `"room_id"` (the page) is a room's id, `""` for none, or
+  `"keep"` for "leave it as it is"; `"room"` (a station) is a room's name,
+  matched without regard to case or spaces, `""` for none. The very label
+  the station already has is accepted as no change at all, so an older
+  station that sends its free-text room back is not refused for it. Any
+  other room is `{:error, {:room, :unknown}}` and nothing changes.
   """
   def update_settings(%Station{} = station, attrs) when is_map(attrs) do
     tournament = Tournaments.get_tournament!(station.tournament_id)
@@ -356,8 +395,43 @@ defmodule OpenPairingsPolis.Stations do
         "" -> station.name
         name -> name
       end)
-      |> put_text(:room, attrs["room"], & &1)
 
+    with {:ok, changes} <- room_changes(changes, station, tournament, attrs) do
+      other_changes(changes, available, attrs)
+    end
+  end
+
+  defp room_changes(changes, station, tournament, attrs) do
+    case {attrs["room_id"], attrs["room"]} do
+      {"keep", _} ->
+        {:ok, changes}
+
+      {id, _} when is_binary(id) ->
+        if id == "",
+          do: {:ok, Keyword.merge(changes, room_id: "", room: "")},
+          else: put_room(changes, Rooms.get(tournament, id))
+
+      {_, text} when is_binary(text) ->
+        text = text |> String.trim() |> String.slice(0, @name_chars)
+
+        cond do
+          text == "" -> {:ok, Keyword.merge(changes, room_id: "", room: "")}
+          room = Rooms.find_by_name(tournament, text) -> put_room(changes, room)
+          text == room_name(station, tournament) -> {:ok, changes}
+          true -> {:error, {:room, :unknown}}
+        end
+
+      _absent ->
+        {:ok, changes}
+    end
+  end
+
+  defp put_room(_changes, nil), do: {:error, {:room, :unknown}}
+
+  defp put_room(changes, room),
+    do: {:ok, Keyword.merge(changes, room_id: room.id, room: room.name)}
+
+  defp other_changes(changes, available, attrs) do
     changes =
       case attrs["categories"] do
         list when is_list(list) ->

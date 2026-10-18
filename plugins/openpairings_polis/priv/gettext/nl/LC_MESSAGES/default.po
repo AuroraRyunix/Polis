@@ -11,305 +11,335 @@ msgstr ""
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:636
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:706
 #, elixir-autogen, elixir-format
 msgid "\"%{token}\" is not a board number or a range like 40-45."
 msgstr "\"%{token}\" is geen bordnummer en geen reeks zoals 40-45."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:633
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:703
 #, elixir-autogen, elixir-format
 msgid "\"%{token}\" is past board 9999."
 msgstr "\"%{token}\" ligt voorbij bord 9999."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:630
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:700
 #, elixir-autogen, elixir-format
 msgid "\"%{token}\" runs backwards: put the smaller number first."
 msgstr "\"%{token}\" loopt achteruit: zet het kleinste getal eerst."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:503
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:541
 #, elixir-autogen, elixir-format
 msgid "A PC in the hall with a printer. When you publish a round of %{name}, every print station below prints the pairings and the place cards - each its own share, when you give it one."
 msgstr "Een pc in de zaal met een printer. Zodra je een ronde van %{name} publiceert, print elk printstation hieronder de paringen en de tafelkaartjes - elk zijn eigen deel, als je het er een geeft."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:483
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:522
 #, elixir-autogen, elixir-format
 msgid "A print station is a PC in the playing hall with a printer and the Polis program on it. Join it to a tournament in that tournament's Settings, under Print station, and it prints every round the moment you publish it."
 msgstr "Een printstation is een pc in de speelzaal met een printer en het programma Polis erop. Koppel het aan een toernooi via de Instellingen van dat toernooi, onder Printstation, en het print elke ronde zodra je die publiceert."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:276
-#: lib/openpairings_polis_web/live/stations_live.ex:336
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:290
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:359
 #, elixir-autogen, elixir-format
 msgid "Add a print station"
 msgstr "Printstation toevoegen"
 
-#: lib/openpairings_polis/plugin.ex:104
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis/plugin.ex:104
 #, elixir-autogen, elixir-format
 msgid "Adds \"Print station\" to a tournament's Settings: join a PC in the hall with a printer, and it prints the pairings and the place cards of every round as soon as you publish it."
 msgstr "Voegt \"Printstation\" toe aan de Instellingen van een toernooi: koppel een pc in de zaal met een printer, en die print de paringen en de tafelkaartjes van elke ronde zodra je ze publiceert."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:596
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:663
 #, elixir-autogen, elixir-format
 msgid "Board numbers"
 msgstr "Bordnummers"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:627
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:697
 #, elixir-autogen, elixir-format
 msgid "Boards %{list}."
 msgstr "Borden %{list}."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:568
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:635
 #, elixir-autogen, elixir-format
 msgid "Categories"
 msgstr "Categorieën"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:308
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:328
 #, elixir-autogen, elixir-format
 msgid "Copied"
 msgstr "Gekopieerd"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:310
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:330
 #, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr "Kopiëren"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:323
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:346
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr "Klaar"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:626
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:694
 #, elixir-autogen, elixir-format
 msgid "Every board."
 msgstr "Elk bord."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:293
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:313
 #, elixir-autogen, elixir-format
 msgid "Join link"
 msgstr "Koppellink"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:413
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:446
 #, elixir-autogen, elixir-format
 msgid "Last printed: round %{n}"
 msgstr "Laatst geprint: ronde %{n}"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:668
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:745
 #, elixir-autogen, elixir-format
 msgid "Last seen %{time} UTC"
 msgstr "Laatst gezien %{time} UTC"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:320
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:342
 #, elixir-autogen, elixir-format
 msgid "Make a new link"
 msgstr "Nieuwe link maken"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:555
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:611
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Naam"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:542
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:597
 #, elixir-autogen, elixir-format
 msgid "Name, room and what it prints"
 msgstr "Naam, ruimte en wat het afdrukt"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:660
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:737
 #, elixir-autogen, elixir-format
 msgid "Never seen"
 msgstr "Nog nooit gezien"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:378
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:403
 #, elixir-autogen, elixir-format
 msgid "No print station has joined yet."
 msgstr "Er is nog geen printstation gekoppeld."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:137
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:141
 #, elixir-autogen, elixir-format
 msgid "No round is published yet."
 msgstr "Er is nog geen ronde gepubliceerd."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:369
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:393
 #, elixir-autogen, elixir-format
 msgid "No round is published yet. The first one prints by itself."
 msgstr "Er is nog geen ronde gepubliceerd. De eerste wordt vanzelf geprint."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:586
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:653
 #, elixir-autogen, elixir-format
 msgid "None ticked: every category. A board prints when either player is in a ticked one."
 msgstr "Niets aangevinkt: elke categorie. Een bord wordt afgedrukt als een van beide spelers in een aangevinkte categorie zit."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:394
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:420
 #, elixir-autogen, elixir-format
 msgid "Offline"
 msgstr "Offline"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:394
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:420
 #, elixir-autogen, elixir-format
 msgid "Online"
 msgstr "Online"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:278
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:293
 #, elixir-autogen, elixir-format
 msgid "Open Polis on the hall PC, paste the link (or scan the code) and press Join. The link works once, for %{minutes} minutes."
 msgstr "Open Polis op de pc in de zaal, plak er de link in (of scan de code) en koppel. De link werkt één keer, %{minutes} minuten lang."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:357
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:381
 #, elixir-autogen, elixir-format
 msgid "Pairings"
 msgstr "Paringen"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:356
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:380
 #, elixir-autogen, elixir-format
 msgid "Pairings and place cards"
 msgstr "Paringen en tafelkaartjes"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:358
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:382
 #, elixir-autogen, elixir-format
 msgid "Place cards"
 msgstr "Tafelkaartjes"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:343
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "Print again"
 msgstr "Opnieuw printen"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:363
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:387
 #, elixir-autogen, elixir-format
 msgid "Print round %{n} again"
 msgstr "Ronde %{n} opnieuw printen"
 
-#: lib/openpairings_polis/plugin.ex:34
-#: lib/openpairings_polis/plugin.ex:80
-#: lib/openpairings_polis/plugin.ex:102
-#: lib/openpairings_polis_web/live/stations_live.ex:42
-#: lib/openpairings_polis_web/live/stations_live.ex:67
-#: lib/openpairings_polis_web/live/stations_live.ex:481
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis/plugin.ex:34
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis/plugin.ex:80
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis/plugin.ex:102
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:43
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:68
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:519
 #, elixir-autogen, elixir-format
 msgid "Print station"
 msgstr "Printstation"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:125
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:129
 #, elixir-autogen, elixir-format
 msgid "Print station removed."
 msgstr "Printstation verwijderd."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:376
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:400
 #, elixir-autogen, elixir-format
 msgid "Print stations"
 msgstr "Printstations"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:410
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:442
 #, elixir-autogen, elixir-format
 msgid "Printer: %{printer}"
 msgstr "Printer: %{printer}"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:650
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:721
 #, elixir-autogen, elixir-format
 msgid "Prints %{categories}"
 msgstr "Drukt %{categories} af"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:647
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:718
 #, elixir-autogen, elixir-format
 msgid "Prints boards %{list}"
 msgstr "Drukt borden %{list} af"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:653
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:724
 #, elixir-autogen, elixir-format
 msgid "Prints boards %{list}, %{categories}"
 msgstr "Drukt borden %{list} af, %{categories}"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:644
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:715
 #, elixir-autogen, elixir-format
 msgid "Prints everything"
 msgstr "Drukt alles af"
 
-#: lib/openpairings_polis/plugin.ex:41
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis/plugin.ex:41
 #, elixir-autogen, elixir-format
 msgid "Prints the pairings and the place cards on a PC in the playing hall the moment a round is published."
 msgstr "Print de paringen en de tafelkaartjes op een pc in de speelzaal zodra een ronde gepubliceerd is."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:429
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:466
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "Verwijderen"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:427
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:463
 #, elixir-autogen, elixir-format
 msgid "Remove this print station? It stops printing for this tournament."
 msgstr "Dit printstation verwijderen? Het print dan niets meer voor dit toernooi."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:562
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:618
 #, elixir-autogen, elixir-format
 msgid "Room"
 msgstr "Ruimte"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:605
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:672
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Bewaren"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:179
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:183
 #, elixir-autogen, elixir-format
 msgid "Saved. The station hears of it at once when it is online."
 msgstr "Bewaard. Het station hoort het meteen als het online is."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:667
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:744
 #, elixir-autogen, elixir-format
 msgid "Seen %{n} min ago"
 msgstr "%{n} min geleden gezien"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:666
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:743
 #, elixir-autogen, elixir-format
 msgid "Seen just now"
 msgstr "Net gezien"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:144
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:148
 #, elixir-autogen, elixir-format
 msgid "Sent to every print station that is online: round %{n}."
 msgstr "Naar elk printstation dat online is gestuurd: ronde %{n}."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:500
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:538
 #, elixir-autogen, elixir-format
 msgid "Settings - Print station"
 msgstr "Instellingen - Printstation"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:269
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:283
 #, elixir-autogen, elixir-format
 msgid "Switch it on in your settings."
 msgstr "Zet het aan in je instellingen."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:129
-#: lib/openpairings_polis_web/live/stations_live.ex:192
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:133
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "That print station is not there any more."
 msgstr "Dat printstation is er niet meer."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:187
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:192
 #, elixir-autogen, elixir-format
 msgid "The board numbers do not read. Use numbers and ranges: 1-20, 35, 40-45."
 msgstr "De bordnummers zijn niet te lezen. Gebruik getallen en reeksen: 1-20, 35, 40-45."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:105
-#: lib/openpairings_polis_web/live/stations_live.ex:267
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:108
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "The print station is switched off for your account."
 msgstr "Het printstation staat uit voor je account."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:615
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:683
 #, elixir-autogen, elixir-format
 msgid "Undo changes"
 msgstr "Wijzigingen ongedaan maken"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:314
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:335
 #, elixir-autogen, elixir-format
 msgid "Valid until %{time} UTC, for one print station."
 msgstr "Geldig tot %{time} UTC, voor één printstation."
 
-#: lib/openpairings_polis_web/live/stations_live.ex:354
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:378
 #, elixir-autogen, elixir-format
 msgid "What"
 msgstr "Wat"
 
-#: lib/openpairings_polis_web/live/stations_live.ex:564
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:580
 #, elixir-autogen, elixir-format
-msgid "e.g. Main hall"
-msgstr "bv. Grote zaal"
+msgid "%{room} (not a room of this tournament)"
+msgstr "%{room} (geen ruimte van dit toernooi)"
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:732
+#, elixir-autogen, elixir-format
+msgid "%{room} has no boards yet, so nothing prints"
+msgstr "%{room} heeft nog geen borden, dus er wordt niets afgedrukt"
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:733
+#, elixir-autogen, elixir-format
+msgid "In %{room}: %{share}"
+msgstr "In %{room}: %{share}"
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:578
+#, elixir-autogen, elixir-format
+msgid "No room: the whole hall"
+msgstr "Geen ruimte: de hele zaal"
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "That room is not one of this tournament's rooms any more."
+msgstr "Die ruimte is geen ruimte van dit toernooi meer."
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:632
+#, elixir-autogen, elixir-format
+msgid "This tournament has no rooms yet. They are made in Settings, Rooms."
+msgstr "Dit toernooi heeft nog geen ruimtes. Je maakt ze in Instellingen, Ruimtes."
+
+#: c:/Users/jorian/AppData/Local/Temp/claude/C--Users-jorian-Desktop-02cloud-VPS-projects-openpairings/65f91aaf-60db-40d5-822a-f101e889fdbc/scratchpad/polis_hosted/plugins/polis/lib/openpairings_polis_web/live/stations_live.ex:622
+#, elixir-autogen, elixir-format
+msgid "Typed on the station before this tournament had rooms. It is a label only: the station prints the whole hall until you pick a room."
+msgstr "Op het station getypt voordat dit toernooi ruimtes had. Het is alleen een label: het station drukt de hele zaal af tot je een ruimte kiest."
