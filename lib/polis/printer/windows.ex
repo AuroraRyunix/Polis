@@ -95,8 +95,9 @@ defmodule Polis.Printer.Windows do
   end
 
   defp run(args) do
-    runner = Application.get_env(:polis, :windows_cmd, &System.cmd/3)
-    runner.("powershell.exe", args, stderr_to_stdout: true)
+    runner = Application.get_env(:polis, :windows_cmd, &Polis.Cmd.run/3)
+    # Two minutes: PowerShell's start, the driver's thinking and a few pages.
+    runner.("powershell.exe", args, stderr_to_stdout: true, timeout: 120_000)
   rescue
     error -> {"PowerShell did not start: #{Exception.message(error)}", 1}
   end

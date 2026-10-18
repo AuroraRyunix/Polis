@@ -8,23 +8,32 @@ defmodule Polis.Printer.Cups do
     * the default: `lpstat -d` ("system default destination: NAME");
     * printing: `lp -d NAME -t TITLE -n COPIES -o media=A4|Letter FILE.pdf`.
 
-  Every command is run with its arguments as a list (`System.cmd/3`), never
+  Every command is run with its arguments as a list (`Polis.Cmd.run/3`), never
   through a shell: a printer or tournament name with a quote or a
   semicolon in it is a name, not a command. The runner can be swapped
-  (`config :polis, :cups_cmd`, a function like `System.cmd/3`) so that the
-  tests check the arguments without printing anything.
+  (`config :polis, :cups_cmd`, a function like `System.cmd/3`, handed a
+  `:timeout` too) so that the tests check the arguments without printing
+  anything. Every command has a deadline and is killed past it, or when the
+  station stops (`Polis.Cmd`).
   """
 
   @behaviour Polis.Printer
 
+  # How long CUPS gets: to name its printers (a network printer that went
+  # to sleep can keep `lpstat` thinking for a while), and to take a job.
+  # Past that the command is killed and the job fails with a sentence,
+  # which beats a queue that says "printing" until next week.
+  @ask_ms 15_000
+  @print_ms 60_000
+
   @impl true
   def printers do
-    case run("lpstat", ["-e"]) do
+    case run("lpstat", ["-e"], @ask_ms) do
       {out, 0} ->
         {:ok, parse_names(out)}
 
       _older_or_failed ->
-        case run("lpstat", ["-a"]) do
+        case run("lpstat", ["-a"], @ask_ms) do
           {out, 0} -> {:ok, parse_accepting(out)}
           {out, _status} -> {:error, trouble(out)}
         end
@@ -33,7 +42,7 @@ defmodule Polis.Printer.Cups do
 
   @impl true
   def default_printer do
-    case run("lpstat", ["-d"]) do
+    case run("lpstat", ["-d"], @ask_ms) do
       {out, 0} -> parse_default(out)
       _failed -> nil
     end
@@ -41,7 +50,7 @@ defmodule Polis.Printer.Cups do
 
   @impl true
   def print(job) do
-    case run("lp", print_args(job)) do
+    case run("lp", print_args(job), @print_ms) do
       {_out, 0} -> :ok
       {out, _status} -> {:error, trouble(out)}
     end
@@ -100,15 +109,16 @@ defmodule Polis.Printer.Cups do
     end
   end
 
-  defp run(command, args) do
+  defp run(command, args, timeout) do
     runner = Application.get_env(:polis, :cups_cmd)
+    opts = [stderr_to_stdout: true, timeout: timeout]
 
     cond do
       runner ->
-        runner.(command, args, stderr_to_stdout: true)
+        runner.(command, args, opts)
 
       System.find_executable(command) ->
-        System.cmd(command, args, stderr_to_stdout: true)
+        Polis.Cmd.run(command, args, opts)
 
       true ->
         {"There is no #{command} on this system: CUPS is not installed.", 127}

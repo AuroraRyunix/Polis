@@ -5,6 +5,11 @@ defmodule Polis.Application do
   # reads it, the queue before the lines that fill it, the page last.
   # `rest_for_one`, so a state process that falls over takes down what
   # holds a stale view of it, and only that.
+  #
+  # Stopping goes the other way round, and every child has a deadline: no
+  # supervisor waits `:infinity` for anything, so a stop is over in seconds
+  # rather than when the launcher loses patience. The reaper is first so
+  # that it stops last, killing any `lp` that is still thinking.
 
   use Application
 
@@ -12,19 +17,23 @@ defmodule Polis.Application do
   def start(_type, _args) do
     children =
       [
-        {Phoenix.PubSub, name: Polis.PubSub},
-        {Task.Supervisor, name: Polis.TaskSupervisor},
+        Polis.Cmd.Reaper,
+        bounded({Phoenix.PubSub, name: Polis.PubSub}),
+        bounded({Task.Supervisor, name: Polis.TaskSupervisor}),
         Polis.State,
-        {Registry, keys: :unique, name: Polis.LinkRegistry},
-        {DynamicSupervisor, name: Polis.Links, strategy: :one_for_one},
+        bounded({Registry, keys: :unique, name: Polis.LinkRegistry}),
+        bounded({DynamicSupervisor, name: Polis.Links, strategy: :one_for_one}),
         Polis.Queue,
         Polis.LauncherDetails,
         {Polis.Updates.Checker, timer: Application.get_env(:polis, :updates_timer, true)}
       ] ++
-        links() ++ [PolisWeb.Endpoint]
+        links() ++ [bounded(PolisWeb.Endpoint, 8_000)]
 
     Supervisor.start_link(children, strategy: :rest_for_one, name: Polis.Supervisor)
   end
+
+  # A supervisor's own default is to wait for its children forever.
+  defp bounded(spec, ms \\ 5_000), do: Supervisor.child_spec(spec, shutdown: ms)
 
   # The lines to the joined tournaments, started once everything they call
   # is up. A task, so a station with ten tournaments and no network does

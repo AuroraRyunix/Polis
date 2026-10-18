@@ -18,6 +18,9 @@ config :polis, PolisWeb.Gettext, default_locale: "en", locales: ~w(en nl)
 config :polis, PolisWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
+  # At a stop, open connections (the station page, a browser left on the
+  # PDF) get three seconds to go, not Bandit's fifteen.
+  http: [thousand_island_options: [shutdown_timeout: 3_000]],
   render_errors: [formats: [html: PolisWeb.ErrorHTML], layout: false],
   pubsub_server: Polis.PubSub,
   live_view: [signing_salt: "pQ2s7Lkd"]

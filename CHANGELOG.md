@@ -15,6 +15,9 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **Stopping Polis stops Polis, and what it started.** Every `lp`, `lpstat` and PowerShell now has a deadline (fifteen seconds to name the printers, a minute to take a job, two for Windows), past which it is killed and the job fails with a sentence instead of saying "printing" until further notice. A command whose caller is gone is killed too, and whatever is still running when the station stops goes with it: Erlang closes the port and walks away, and the `lp` on the other end used to stay behind, waiting for a printer that was not coming back.
+- [Fix] **No part of a stop waits forever.** Every supervisor has a deadline, open browser connections get three seconds instead of fifteen, and on the Mac the launcher's SIGKILL after twenty seconds now reaches the whole tree under the server - the BEAM and the programs it started - rather than the BEAM alone. The app's own last resort, ten seconds later, does the same instead of killing only the script and leaving the server to launchd.
+
 - [Change] **The Print station switch is in the Belgian pack** of OpenPairings' Features, not under "Optional tools for any federation", a heading whose main achievement was never being read.
 
 ## [0.1.0] - 2026-10-18
