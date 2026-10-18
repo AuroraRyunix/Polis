@@ -15,6 +15,9 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **The room is a choice now, when the tournament has rooms.** OpenPairings sends the room names with the station's settings, and the station's page offers them in a picker instead of a text field that accepted "Hal", "hal" and "The big room, you know the one". A station in a room prints only the boards that room holds, on top of its board numbers and categories. Nothing picked is every room, as before.
+- [Feature] **A room the server does not accept is said.** If OpenPairings turns a room down it keeps what it had, and the page says the room is not one of the tournament's, in the same tone it already used for board numbers that do not parse.
+- [Change] **An old free-text room survives, but filters nothing.** A label typed before the tournament had rooms stays visible as "not a room of this tournament" until somebody picks a real one. A server that predates rooms sends no list, and gets the free-text field it was always used to.
 - [Change] **New address.** The repository moved to github.com/teapot-chess; old links still redirect, out of politeness rather than obligation.
 ## [0.2.0] - 2026-10-18
 

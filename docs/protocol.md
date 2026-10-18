@@ -71,7 +71,12 @@ Station to server:
 - `settings`: any of `name`, `room`, `categories` (a list of category
   names) and `boards` (board numbers as text, `1-20, 35, 40-45`). A key
   left out is left alone. Sent only while the line is up: the server keeps
-  these, and a change it cannot hear did not happen.
+  these, and a change it cannot hear did not happen. `room` must be `""`
+  or one of the `rooms_available` of the last `settings` frame (matched
+  trimmed and case-insensitively; the server stores its own spelling).
+  Sending back the very same legacy text the server already holds is
+  "unchanged" and accepted. Against a server that sends no
+  `rooms_available`, `room` is free text, as it always was.
 - `leave`: the station is removing the tournament.
 
 Server to station:
@@ -82,11 +87,20 @@ Server to station:
   (a key the server does not know today may be a server restored from
   yesterday's backup tomorrow).
 - `settings`: `name`, `room`, `categories`, `boards` and
-  `categories_available` (the tournament's categories, to tick from), after
-  `welcome` and whenever any of them changes - by the station's own
-  `settings`, or in OpenPairings. Never twice the same in a row, except
-  with `error` (`boards`): a change turned down, sent with what still
-  holds. The station shows what this says, not what it asked for.
+  `categories_available` (the tournament's categories, to tick from) and
+  `rooms_available` (the tournament's room names, a list of strings that
+  may be empty), after `welcome` and whenever any of them changes - by the
+  station's own `settings`, or in OpenPairings. Never twice the same in a
+  row, except with `error` (`boards` or `room`): a change turned down,
+  nothing changed, sent with what still holds. The station shows what this
+  says, not what it asked for.
+  `rooms_available` is additive: a server that predates rooms leaves the
+  key out, and the station then offers a free-text room field. `room` is
+  normally `""` or one of `rooms_available`, but may be legacy free text
+  typed before the tournament had rooms. The server keeps such text as a
+  label; it restricts nothing (the station prints as if it had no room)
+  until a real room is picked, and the station shows it as "not a room of
+  this tournament".
 - `round`: `round` is the payload below.
 - `print`: `round` and `what` (`pairings`, `placecards` or `both`). Acted
   on only for the round the station holds.
@@ -127,15 +141,19 @@ then 2, 4, ... up to 30. After a refusal: 60.
 - `spoken` and `club` are not printed by Polis; the announcer uses the
   first.
 - `selection`, present only when the station prints part of the round:
-  `room`, `boards` (text) and `categories`. The server has already left
+  `room` (the room's name when the station has a real room, otherwise
+  `""`), `boards` (text) and `categories`. The server has already left
   out the other boards; Polis prints `selection` in the sheet's heading,
   and prints nothing for a round whose `boards` came out empty.
 
 ## A station's share
 
-A board is in a station's share when its number is in the station's board
-numbers and either player is in one of its categories; a bye counts its
-one player. Each test passes when its list is empty. A board's number is
+A board is in a station's share when it is in the station's room, its
+number is in the station's board numbers and either player is in one of
+its categories; a bye counts its one player. Each test passes when it has
+nothing to test: no room, or a room that is not one of the tournament's
+(legacy text), an empty board list, an empty category list. A room is a
+set of board numbers kept on the server; the station only names it. A board's number is
 the whole number its label starts with: `12` is 12, a team board `3.1` is
 3, a shared fixed table `1001/1002` is both.
 

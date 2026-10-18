@@ -70,12 +70,14 @@ From then on, per tournament:
   than one that is old.
 - **"Print round N again" in OpenPairings** prints what it names, at once.
 - **A share of the round.** A station can print only some categories and
-  some board numbers (`1-20, 35, 40-45`), and has a name and a room. All
-  four are set on the station's page under *This station* or in
+  some board numbers (`1-20, 35, 40-45`), and has a name and a room. When the
+  tournament has rooms in OpenPairings, the room is picked from them and a
+  board prints only if it is in that room; a server without rooms gets a
+  free-text label as before. All four are set on the station's page under *This station* or in
   OpenPairings, and OpenPairings keeps them: a change made in either place
   shows in the other at the next push. Nothing set is everything. A board
-  prints when its number is in the list and either player is in a ticked
-  category (a bye: its one player). A round with no board for this station
+  prints when it is in the room, its number is in the list and either player
+  is in a ticked category (a bye: its one player). A round with no board for this station
   prints nothing at all; a sheet that is printed says its room and share in
   the heading.
 
