@@ -25,7 +25,7 @@
 
 set -eu
 
-REPO="AuroraRyunix/Polis"
+REPO="teapot-chess/Polis"
 INSTALL_DIR="/opt/polis"
 DATA_DIR="/var/lib/polis"
 CONF_FILE="/etc/polis/polis.env"

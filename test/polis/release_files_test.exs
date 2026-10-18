@@ -62,7 +62,7 @@ defmodule Polis.ReleaseFilesTest do
         assert workflow =~ name, "release.yml does not publish #{name}"
       end
 
-      assert workflow =~ "AuroraRyunix/Polis" or workflow =~ "github.repository"
+      assert workflow =~ "teapot-chess/Polis" or workflow =~ "github.repository"
     end
 
     test "the Linux archives are built where a Raspberry Pi can run them" do

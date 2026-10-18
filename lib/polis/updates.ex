@@ -50,7 +50,7 @@ defmodule Polis.Updates do
   alias Polis.{Paths, Queue, State}
   alias Polis.Updates.Checker
 
-  @repo "AuroraRyunix/Polis"
+  @repo "teapot-chess/Polis"
   @latest_url "https://api.github.com/repos/#{@repo}/releases/latest"
   @releases_page "https://github.com/#{@repo}/releases"
   @user_agent "Polis-UpdateCheck"

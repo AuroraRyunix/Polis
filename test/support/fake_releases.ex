@@ -28,7 +28,7 @@ defmodule Polis.FakeReleases do
 
     release = %{
       "tag_name" => "v#{version}",
-      "html_url" => "https://github.com/AuroraRyunix/Polis/releases/tag/v#{version}",
+      "html_url" => "https://github.com/teapot-chess/Polis/releases/tag/v#{version}",
       "draft" => false,
       "prerelease" => false,
       "assets" => Enum.map(assets, fn {name, size} -> %{"name" => name, "size" => size} end)

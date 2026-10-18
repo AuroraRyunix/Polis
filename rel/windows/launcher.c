@@ -115,7 +115,7 @@
 #define DEFAULT_PORT 4061
 #define MAXP 1024
 
-#define REPO_URL "https://github.com/AuroraRyunix/Polis"
+#define REPO_URL "https://github.com/teapot-chess/Polis"
 #define RUN_KEY L"Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 #define RUN_VALUE L"Polis"
 

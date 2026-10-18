@@ -15,6 +15,7 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **New address.** The repository moved to github.com/teapot-chess; old links still redirect, out of politeness rather than obligation.
 ## [0.2.0] - 2026-10-18
 
 - [Change] **Print station moved out of the tournament's top bar and into its Settings**, under Publishing, with the rail beside it. A thing you set up once and then forget about does not get a tab next to Pairings. The station's page now says where to find it: Settings → Print station → Add a print station.

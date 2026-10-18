@@ -5,7 +5,7 @@
 
 [Unit]
 Description=Polis - the print station of a chess hall
-Documentation=https://github.com/AuroraRyunix/Polis
+Documentation=https://github.com/teapot-chess/Polis
 After=network.target
 
 [Service]

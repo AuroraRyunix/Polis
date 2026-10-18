@@ -2,7 +2,7 @@
 # Installs Polis on a Linux box - a small PC or a Raspberry Pi in the hall -
 # as a service that starts with the machine.
 #
-#   curl -fsSL https://github.com/AuroraRyunix/Polis/releases/latest/download/install.sh | sudo sh
+#   curl -fsSL https://github.com/teapot-chess/Polis/releases/latest/download/install.sh | sudo sh
 #
 # or, in a hall without internet, from a release unpacked on a stick:
 #
@@ -32,7 +32,7 @@
 
 set -eu
 
-REPO="AuroraRyunix/Polis"
+REPO="teapot-chess/Polis"
 INSTALL_DIR="/opt/polis"
 DATA_DIR="/var/lib/polis"
 CONF_DIR="/etc/polis"
