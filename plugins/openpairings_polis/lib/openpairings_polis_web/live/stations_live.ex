@@ -8,7 +8,8 @@ defmodule OpenPairingsPolisWeb.StationsLive do
       (online or not, last seen, what each said about its printer), "Add a
       print station" (a one-time link and its QR code), Remove, "Print
       round N again", and per station its name, its room and what it
-      prints (categories, board numbers). It sits in the tournament's
+      prints (categories, board numbers). The room is picked from the
+      tournament's own (Settings, Rooms). It sits in the tournament's
       Settings frame (`PairingsEngineWeb.SettingsSupport.settings_page/1`),
       so the rail stays beside it.
 
@@ -26,8 +27,8 @@ defmodule OpenPairingsPolisWeb.StationsLive do
 
   import PairingsEngineWeb.SettingsSupport, only: [settings_page: 1]
 
-  alias OpenPairingsPolis.{BoardRanges, Plugin, Stations}
-  alias PairingsEngine.{Features, Tournaments}
+  alias OpenPairingsPolis.{Plugin, Stations}
+  alias PairingsEngine.{BoardRanges, Features, Rooms, Tournaments}
 
   # Online/offline is a matter of time passing, so the page looks again
   # now and then even when nobody says anything.
@@ -192,6 +193,14 @@ defmodule OpenPairingsPolisWeb.StationsLive do
            note: nil
          )}
 
+      # Removed in Settings, Rooms while this page still offered it.
+      {:error, {:room, _reason}} ->
+        {:noreply,
+         assign(socket,
+           error: gettext("That room is not one of this tournament's rooms any more."),
+           note: nil
+         )}
+
       {:error, :not_found} ->
         {:noreply, assign(socket, error: gettext("That print station is not there any more."))}
     end
@@ -219,7 +228,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
   defp draft_params(params) do
     %{
       "name" => params["name"] || "",
-      "room" => params["room"] || "",
+      "room_id" => params["room_id"] || "keep",
       "categories" => Enum.reject(List.wrap(params["categories"]), &(&1 == "")),
       "boards" => params["boards"] || ""
     }
@@ -230,7 +239,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
   @impl true
   def handle_info(:polis_stations_changed, socket), do: {:noreply, load_stations(socket)}
 
-  # A category added or renamed changes what can be ticked.
+  # A category or a room added or renamed changes what can be picked.
   def handle_info({:tournament_changed, _tid, _hint}, %{assigns: %{tournament: %{}}} = socket) do
     tournament =
       Tournaments.get_tournament(socket.assigns.tournament.id) || socket.assigns.tournament
@@ -264,9 +273,9 @@ defmodule OpenPairingsPolisWeb.StationsLive do
     >
       <.frame tournament={@tournament} current_scope={@current_scope}>
         <p id="polis-note" role="status" aria-live="polite" class={@note && "ok-note"}>{@note}</p>
-        
+
         <p :if={@error} id="polis-error" role="alert" class="error-note">{@error}</p>
-        
+
         <section :if={!@enabled?} id="polis-not-enabled" class="card">
           <p class="hint">
             {gettext("The print station is switched off for your account.")}
@@ -275,18 +284,18 @@ defmodule OpenPairingsPolisWeb.StationsLive do
             </.link>
           </p>
         </section>
-        
+
         <%= if @tournament do %>
           <section :if={@enabled?} id="polis-add" class="card">
             <h2>{gettext("Add a print station")}</h2>
-            
+
             <p class="hint">
               {gettext(
                 "Open Polis on the hall PC, paste the link (or scan the code) and press Join. The link works once, for %{minutes} minutes.",
                 minutes: Stations.code_minutes()
               )}
             </p>
-            
+
             <%= if @join do %>
               <div
                 id="polis-join"
@@ -299,7 +308,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
                 >
                   {Phoenix.HTML.raw(@join.qr)}
                 </div>
-                
+
                 <div style="flex: 1 1 280px; min-width: 0">
                   <label for="polis-join-url" class="hint">{gettext("Join link")}</label>
                   <div style="display: flex; gap: 8px; margin-top: 4px">
@@ -321,18 +330,18 @@ defmodule OpenPairingsPolisWeb.StationsLive do
                       {gettext("Copy")}
                     </button>
                   </div>
-                  
+
                   <p class="hint" id="polis-join-expiry" style="margin-top: 8px">
                     {gettext("Valid until %{time} UTC, for one print station.",
                       time: Calendar.strftime(@join.expires_at, "%H:%M")
                     )}
                   </p>
-                  
+
                   <div class="actions">
                     <button type="button" class="pe-btn" id="polis-new-link" phx-click="add_station">
                       {gettext("Make a new link")}
                     </button>
-                    
+
                     <button type="button" class="pe-btn" id="polis-close-link" phx-click="close_join">
                       {gettext("Done")}
                     </button>
@@ -352,10 +361,10 @@ defmodule OpenPairingsPolisWeb.StationsLive do
               </div>
             <% end %>
           </section>
-          
+
           <section :if={@enabled? and @station_count > 0} id="polis-print-again" class="card">
             <h2>{gettext("Print again")}</h2>
-            
+
             <%= if @latest_round > 0 do %>
               <.form
                 for={@print_form}
@@ -386,14 +395,14 @@ defmodule OpenPairingsPolisWeb.StationsLive do
             <% end %>
           </section>
         <% end %>
-        
+
         <section id="polis-stations-card" class="card">
           <h2>{gettext("Print stations")}</h2>
-          
+
           <p :if={@station_count == 0} id="polis-no-stations" class="hint">
             {gettext("No print station has joined yet.")}
           </p>
-          
+
           <div id="polis-stations" phx-update="stream">
             <article
               :for={{dom_id, s} <- @streams.stations}
@@ -410,11 +419,15 @@ defmodule OpenPairingsPolisWeb.StationsLive do
                   >
                     {if Stations.online?(s), do: gettext("Online"), else: gettext("Offline")}
                   </span>
-                   <strong>&nbsp;{s.name}</strong>
-                  <span :if={(s.room || "") != ""} id={"#{dom_id}-room"} class="hint">
-                    &middot; {s.room}
+                  <strong>&nbsp;{s.name}</strong>
+                  <span
+                    :if={Stations.room_name(s, @tournament || s.tournament) != ""}
+                    id={"#{dom_id}-room"}
+                    class="hint"
+                  >
+                    &middot; {Stations.room_name(s, @tournament || s.tournament)}
                   </span>
-                  
+
                   <span :if={!@tournament} class="hint">
                     &middot;
                     <.link navigate={"/p/polis/tournaments/#{s.tournament_id}"}>
@@ -422,23 +435,23 @@ defmodule OpenPairingsPolisWeb.StationsLive do
                     </.link>
                   </span>
                 </p>
-                
+
                 <p class="hint" style="margin: 2px 0 0">
                   {seen_text(s.last_seen_at)}
                   <span :if={s.status["printer"]}>
                     &middot; {gettext("Printer: %{printer}", printer: s.status["printer"])}
                   </span>
-                  
+
                   <span :if={s.status["last_printed_round"]} id={"#{dom_id}-printed"}>
                     &middot; {gettext("Last printed: round %{n}", n: s.status["last_printed_round"])}
                   </span>
                 </p>
-                
+
                 <p :if={@tournament} id={"#{dom_id}-share"} class="hint" style="margin: 2px 0 0">
                   {share_text(s, @tournament)}
                 </p>
               </div>
-              
+
               <button
                 :if={@tournament && @enabled?}
                 type="button"
@@ -452,19 +465,19 @@ defmodule OpenPairingsPolisWeb.StationsLive do
               >
                 {gettext("Remove")}
               </button>
-              
+
               <div :if={@tournament && @enabled?} style="flex-basis: 100%">
                 <.station_settings
                   station={s}
                   draft={@drafts[s.id]}
-                  categories={@tournament.categories || []}
+                  tournament={@tournament}
                   dom_id={dom_id}
                 />
               </div>
             </article>
           </div>
         </section>
-        
+
         <script :type={Phoenix.LiveView.ColocatedHook} name=".CopyJoinLink">
           // Copies the join link. The clipboard API wants a secure context;
           // the fallback selects the text, which is half the job done anyway.
@@ -504,7 +517,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
     <div class="page-header">
       <div>
         <h1>{gettext("Print station")}</h1>
-        
+
         <p class="subtitle" style="margin: 0">
           {gettext(
             "A print station is a PC in the playing hall with a printer and the Polis program on it. Join it to a tournament in that tournament's Settings, under Print station, and it prints every round the moment you publish it."
@@ -512,7 +525,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
         </p>
       </div>
     </div>
-     {render_slot(@inner_block)}
+    {render_slot(@inner_block)}
     """
   end
 
@@ -530,7 +543,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
           name: @tournament.name
         )}
       </p>
-       {render_slot(@inner_block)}
+      {render_slot(@inner_block)}
     </.settings_page>
     """
   end
@@ -539,32 +552,50 @@ defmodule OpenPairingsPolisWeb.StationsLive do
   # there is one, is what the form shows.
   attr :station, :any, required: true
   attr :draft, :map, default: nil
-  attr :categories, :list, required: true
+  attr :tournament, :any, required: true
   attr :dom_id, :string, required: true
 
   defp station_settings(assigns) do
-    s = assigns.station
+    %{station: s, tournament: t} = assigns
+    legacy = if Stations.legacy_room?(s, t), do: Stations.room_name(s, t)
+
+    current_room =
+      case Stations.room(s, t) do
+        %{id: id} -> id
+        nil -> if legacy, do: "keep", else: ""
+      end
 
     params =
       assigns.draft ||
         %{
           "name" => s.name,
-          "room" => s.room || "",
+          "room_id" => current_room,
           "categories" => s.filter_categories || [],
           "boards" => s.filter_boards || ""
         }
 
+    room_options =
+      [{gettext("No room: the whole hall"), ""}] ++
+        if(legacy,
+          do: [{gettext("%{room} (not a room of this tournament)", room: legacy), "keep"}],
+          else: []
+        ) ++ Enum.map(Rooms.list(t), &{&1.name, &1.id})
+
     assigns =
       assign(assigns,
         form: to_form(Map.put(params, "id", to_string(s.id)), as: :station),
+        categories: t.categories || [],
         picked: params["categories"],
-        boards: BoardRanges.parse(params["boards"])
+        boards: BoardRanges.parse(params["boards"]),
+        room_options: room_options,
+        legacy: legacy,
+        has_rooms: Rooms.any?(t)
       )
 
     ~H"""
     <details id={"#{@dom_id}-settings"} class="polis-station-settings" open={@draft != nil}>
       <summary>{gettext("Name, room and what it prints")}</summary>
-      
+
       <.form
         for={@form}
         id={"#{@dom_id}-form"}
@@ -581,16 +612,28 @@ defmodule OpenPairingsPolisWeb.StationsLive do
           maxlength="60"
         />
         <.input
-          field={@form[:room]}
+          field={@form[:room_id]}
           id={"#{@dom_id}-room-input"}
-          type="text"
+          type="select"
           label={gettext("Room")}
-          maxlength="60"
-          placeholder={gettext("e.g. Main hall")}
+          options={@room_options}
         />
+        <p :if={@legacy} id={"#{@dom_id}-room-legacy"} class="hint" style="margin: -4px 0 8px">
+          {gettext(
+            "Typed on the station before this tournament had rooms. It is a label only: the station prints the whole hall until you pick a room."
+          )}
+        </p>
+        <p
+          :if={!@has_rooms and !@legacy}
+          id={"#{@dom_id}-room-none"}
+          class="hint"
+          style="margin: -4px 0 8px"
+        >
+          {gettext("This tournament has no rooms yet. They are made in Settings, Rooms.")}
+        </p>
         <fieldset :if={@categories != []} id={"#{@dom_id}-categories"} class="fieldset mb-2">
           <legend class="label">{gettext("Categories")}</legend>
-           <input type="hidden" name="station[categories][]" value="" />
+          <input type="hidden" name="station[categories][]" value="" />
           <label
             :for={{c, i} <- Enum.with_index(@categories)}
             for={"#{@dom_id}-cat-#{i}"}
@@ -605,14 +648,14 @@ defmodule OpenPairingsPolisWeb.StationsLive do
               class="checkbox checkbox-sm"
             /> {c}
           </label>
-          
+
           <p class="hint" style="margin: 4px 0 0">
             {gettext(
               "None ticked: every category. A board prints when either player is in a ticked one."
             )}
           </p>
         </fieldset>
-        
+
         <.input
           field={@form[:boards]}
           id={"#{@dom_id}-boards"}
@@ -623,12 +666,12 @@ defmodule OpenPairingsPolisWeb.StationsLive do
         <p id={"#{@dom_id}-boards-parsed"} class={boards_class(@boards)} style="margin: -4px 0 8px">
           {boards_text(@boards)}
         </p>
-        
+
         <div class="actions">
           <button type="submit" class="pe-btn primary" id={"#{@dom_id}-save"}>
             {gettext("Save")}
           </button>
-          
+
           <button
             :if={@draft}
             type="button"
@@ -664,23 +707,30 @@ defmodule OpenPairingsPolisWeb.StationsLive do
 
   # What a station prints, in one line for the list.
   defp share_text(station, tournament) do
-    %{categories: cats, boards: boards} = Stations.filter(station, tournament)
+    %{room: room, categories: cats, boards: boards} = Stations.filter(station, tournament)
 
-    case {cats, boards} do
-      {[], []} ->
-        gettext("Prints everything")
+    share =
+      case {cats, boards} do
+        {[], []} ->
+          gettext("Prints everything")
 
-      {[], boards} ->
-        gettext("Prints boards %{list}", list: BoardRanges.format(boards))
+        {[], boards} ->
+          gettext("Prints boards %{list}", list: BoardRanges.format(boards))
 
-      {cats, []} ->
-        gettext("Prints %{categories}", categories: Enum.join(cats, ", "))
+        {cats, []} ->
+          gettext("Prints %{categories}", categories: Enum.join(cats, ", "))
 
-      {cats, boards} ->
-        gettext("Prints boards %{list}, %{categories}",
-          list: BoardRanges.format(boards),
-          categories: Enum.join(cats, ", ")
-        )
+        {cats, boards} ->
+          gettext("Prints boards %{list}, %{categories}",
+            list: BoardRanges.format(boards),
+            categories: Enum.join(cats, ", ")
+          )
+      end
+
+    case room do
+      nil -> share
+      %{ranges: []} -> gettext("%{room} has no boards yet, so nothing prints", room: room.name)
+      %{name: name} -> gettext("In %{room}: %{share}", room: name, share: share)
     end
   end
 

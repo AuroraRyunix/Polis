@@ -139,7 +139,15 @@ defmodule OpenPairingsPolisWeb.StationsLiveTest do
 
   describe "a station's name, room and share" do
     setup %{scope: scope, tournament: t} do
-      t = t |> Ecto.Changeset.change(categories: ["U12", "Women"]) |> Repo.update!()
+      {:ok, t} =
+        PairingsEngine.Tournaments.update_tournament(t, %{
+          "categories" => ["U12", "Women"],
+          "rooms" => [
+            %{"name" => "Annex", "boards" => "1-30"},
+            %{"name" => "Room B", "boards" => "31-40"}
+          ]
+        })
+
       {station, _key} = joined_station!(scope, t)
       %{tournament: t, station: station}
     end
@@ -167,15 +175,19 @@ defmodule OpenPairingsPolisWeb.StationsLiveTest do
 
       assert has_element?(view, "#{dom}-boards-parsed.error-note")
 
+      assert has_element?(view, "#{dom}-room-input option", "Annex")
+      annex = Enum.find(t.rooms, &(&1["name"] == "Annex"))["id"]
+
       view
       |> form("#{dom}-form",
-        station: %{name: "Door", room: "Annex", boards: "1-20", categories: ["", "Women"]}
+        station: %{name: "Door", room_id: annex, boards: "1-20", categories: ["", "Women"]}
       )
       |> render_submit()
 
       assert %Station{
                name: "Door",
                room: "Annex",
+               room_id: ^annex,
                filter_boards: "1-20",
                filter_categories: ["Women"]
              } =
@@ -198,12 +210,28 @@ defmodule OpenPairingsPolisWeb.StationsLiveTest do
       assert Repo.get!(Station, s.id).filter_boards == ""
     end
 
+    test "a free-text room from before rooms is offered as it is, and kept", %{
+      conn: conn,
+      station: s,
+      tournament: t
+    } do
+      s |> Ecto.Changeset.change(room: "Upstairs") |> Repo.update!()
+      {:ok, view, _html} = live(conn, "/p/polis/tournaments/#{t.id}")
+      dom = "#stations-#{s.id}"
+      assert has_element?(view, "#{dom}-room-legacy")
+      assert has_element?(view, "#{dom}-room-input option[value='keep']", "Upstairs")
+
+      view |> form("#{dom}-form", station: %{name: "Door"}) |> render_submit()
+      assert %{name: "Door", room: "Upstairs", room_id: ""} = Repo.get!(Station, s.id)
+    end
+
     test "what the station says about itself shows here", %{conn: conn, station: s, tournament: t} do
       {:ok, view, _html} = live(conn, "/p/polis/tournaments/#{t.id}")
       {:ok, _} = Stations.update_settings(s, %{"room" => "Room B", "categories" => ["U12"]})
       _ = render(view)
       assert has_element?(view, "#stations-#{s.id}-room", "Room B")
       assert has_element?(view, "#stations-#{s.id}-share", "U12")
+      assert has_element?(view, "#stations-#{s.id}-share", "Room B")
     end
   end
 end

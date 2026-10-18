@@ -44,7 +44,8 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
                "room" => "",
                "categories" => [],
                "boards" => "",
-               "categories_available" => []
+               "categories_available" => [],
+               "rooms_available" => []
              } = settings
 
       assert state.station.id == s.id
@@ -199,22 +200,33 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       round: r,
       tournament: t
     } do
-      t |> Ecto.Changeset.change(categories: ["U12"]) |> Repo.update!()
+      {:ok, t} =
+        Tournaments.update_tournament(t, %{
+          "categories" => ["U12"],
+          "rooms" => [%{"name" => "Main", "boards" => "1"}, %{"name" => "Annex", "boards" => "2"}]
+        })
+
+      [_main, %{"id" => annex_id}] = t.rooms
       publish!(r)
 
       {[_welcome, _settings, %{"round" => %{"boards" => [_, _]}}], state} =
         frames(dial(s.device_id, key))
 
-      {frames, state} =
-        frames(say(state, %{type: "settings", name: "Door", room: "Annex", boards: "2"}))
+      # The room by name, as an older station types it, in its own spelling.
+      {frames, state} = frames(say(state, %{type: "settings", name: "Door", room: " annex "}))
 
       assert [
-               %{"type" => "settings", "name" => "Door", "room" => "Annex", "boards" => "2"},
+               %{
+                 "type" => "settings",
+                 "name" => "Door",
+                 "room" => "Annex",
+                 "rooms_available" => ["Main", "Annex"]
+               },
                %{"type" => "round", "round" => %{"boards" => [%{"board" => "2"}]} = payload}
              ] = frames
 
       assert payload["selection"]["room"] == "Annex"
-      assert %{name: "Door", room: "Annex", filter_boards: "2"} = Repo.get!(Station, s.id)
+      assert %{name: "Door", room: "Annex", room_id: ^annex_id} = Repo.get!(Station, s.id)
 
       # The topic says so too; the socket has already told the station.
       sid = s.id
@@ -229,9 +241,38 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       {_frames, state} = frames(dial(s.device_id, key))
 
       assert {[%{"type" => "settings", "error" => "boards", "boards" => "", "room" => ""}], _} =
-               frames(say(state, %{type: "settings", room: "X", boards: "9-1"}))
+               frames(say(state, %{type: "settings", name: "X", boards: "9-1"}))
 
-      assert Repo.get!(Station, s.id).room == ""
+      assert Repo.get!(Station, s.id).name == "Hall PC"
+    end
+
+    test "a room the tournament does not have is turned down the same way", %{
+      station: s,
+      key: key
+    } do
+      {_frames, state} = frames(dial(s.device_id, key))
+
+      assert {[%{"type" => "settings", "error" => "room", "room" => ""}], _} =
+               frames(say(state, %{type: "settings", name: "Door", room: "Narnia"}))
+
+      assert %{name: "Hall PC", room: "", room_id: ""} = Repo.get!(Station, s.id)
+    end
+
+    test "a free-text room from before rooms is a label: kept when sent back, filters nothing",
+         %{station: s, key: key, round: r} do
+      s |> Ecto.Changeset.change(room: "Old annex") |> Repo.update!()
+      publish!(r)
+
+      {[_welcome, %{"room" => "Old annex"}, %{"round" => round}], state} =
+        frames(dial(s.device_id, key))
+
+      assert [_, _] = round["boards"]
+      refute Map.has_key?(round, "selection")
+
+      assert {[%{"type" => "settings", "name" => "Door", "room" => "Old annex"}], _} =
+               frames(say(state, %{type: "settings", name: "Door", room: "Old annex"}))
+
+      assert %{room: "Old annex", room_id: ""} = Repo.get!(Station, s.id)
     end
 
     test "a change on the page reaches the socket and goes down the line", %{
@@ -240,13 +281,27 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       tournament: t
     } do
       {_frames, state} = frames(dial(s.device_id, key))
-      {:ok, _} = Stations.update_settings(t, s.id, %{"name" => "Renamed", "room" => "Hall 2"})
+
+      {:ok, t} =
+        Tournaments.update_tournament(t, %{"rooms" => [%{"name" => "Hall 2", "boards" => "1-2"}]})
+
+      [%{"id" => id}] = t.rooms
+      {:ok, _} = Stations.update_settings(t, s.id, %{"name" => "Renamed", "room_id" => id})
 
       sid = s.id
       assert_receive {:polis_settings_changed, ^sid} = msg
 
-      assert {[%{"type" => "settings", "name" => "Renamed", "room" => "Hall 2"}], _} =
+      assert {[%{"type" => "settings", "name" => "Renamed", "room" => "Hall 2"}], state} =
                frames(LinkSocket.handle_info(msg, state))
+
+      # Renamed in Settings, Rooms: the station follows, at the next look.
+      {:ok, _} =
+        Tournaments.update_tournament(t, %{
+          "rooms" => [%{"id" => id, "name" => "Annexe", "boards" => "1-2"}]
+        })
+
+      assert {[%{"type" => "settings", "room" => "Annexe", "rooms_available" => ["Annexe"]}], _} =
+               frames(LinkSocket.handle_info(:recompute, state))
     end
 
     test "a category added to the tournament is offered at the next look", %{
