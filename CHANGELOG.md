@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-18
+
 - [Feature] **A print station for the hall.** Polis joins a tournament in OpenPairings with a join link, keeps a line open to it, and prints the pairings list and the place cards of every newly published round on the printer of the machine it runs on. Once per round, which is the number of times anyone wants a pairings list taped to a pillar.
 - [Feature] **It does not reprint behind anybody's back.** A round the arbiter changes after it came out of the printer is not printed again by itself; the page says "changed since it was printed" and offers Reprint. "Print round N again" in OpenPairings prints what it names, at once.
 - [Feature] **Switches per tournament:** the pairings list and the place cards each on or off, and one to five copies of the list. Without a printer chosen, jobs wait in the queue and go when one is; Polis never guesses which printer is the hall's, because the bar's printer would be a guess too.
