@@ -18,7 +18,7 @@ defmodule OpenPairingsPolis.Plugin do
   alias PairingsEngine.Tournaments.Tournament
 
   # Kept in step with the plugin's line in the Polis CHANGELOG.
-  @version "0.2.0"
+  @version "0.3.0"
 
   @feature "polis_print_station"
 
