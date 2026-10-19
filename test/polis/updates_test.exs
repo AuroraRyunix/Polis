@@ -36,7 +36,22 @@ defmodule Polis.UpdatesTest do
     assert Updates.asset_name(:manual, v, {:unix, :linux}) =~
              ~r/^polis-linux-(x86_64|aarch64)\.tar\.gz$/
 
-    assert Updates.asset_name(:manual, v, {:unix, :darwin}) in [nil, "polis-macos-aarch64.zip"]
+    name = Updates.asset_name(:manual, v, {:unix, :darwin})
+    assert name == "polis-macos-#{Updates.arch()}.zip"
+    assert name in ["polis-macos-aarch64.zip", "polis-macos-x86_64.zip"]
+  end
+
+  test "no Mac is told there is no build" do
+    refute Updates.no_build?({:unix, :darwin})
+    refute Updates.no_build?({:unix, :linux})
+    refute Updates.no_build?({:win32, :nt})
+  end
+
+  test "Rosetta counts as the Apple Silicon Mac it is" do
+    assert Updates.arch("aarch64-apple-darwin24.0.0", false) == "aarch64"
+    assert Updates.arch("arm64-apple-darwin24.0.0", false) == "aarch64"
+    assert Updates.arch("x86_64-apple-darwin24.0.0", false) == "x86_64"
+    assert Updates.arch("x86_64-apple-darwin24.0.0", true) == "aarch64"
   end
 
   test "a newer release is found, with the size of what this copy would download" do
