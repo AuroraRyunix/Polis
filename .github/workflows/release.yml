@@ -724,6 +724,7 @@ jobs:
             polis-macos-aarch64.zip \
             polis-macos-x86_64.zip \
             install.sh update.sh uninstall.sh \
+            releases.win.json \
             "PolisApp-${VERSION}-full.nupkg"; do
             [ -s "$needed" ] || { echo "::error::missing from the release: $needed"; exit 1; }
           done
