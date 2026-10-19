@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-19
+
 - [Feature] **Polis for Intel Macs, from macOS 10.13.** macOS 10 exists only on Intel Macs, and they had been struck off on the 14th because their build is slow. It is back, and it is built only when there is a release to put it in (or when somebody starts the workflow by hand), so the other pushes are as quick as they were. Polis's own update notice picks the zip for the Mac it is on, and no longer says an Intel Mac has no build; an Intel Polis running under Rosetta on an Apple Silicon Mac is treated as the Apple Silicon Mac it is. Every program in the bundle is checked against the oldest macOS promised, as before. Whether a 2017 Mac and a real printer agree is for a person with both to say; see docs/macos.md.
 
 ## [0.4.0] - 2026-10-19
