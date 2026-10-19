@@ -3,6 +3,10 @@ defmodule PolisWeb.Endpoint do
 
   @session_options [store: :cookie, key: "_polis_key", signing_salt: "c4Vn8sPq", same_site: "Lax"]
 
+  # Before everything: a request that names a host this station does not
+  # answer to (DNS rebinding) gets a 403 and nothing else. See the plug.
+  plug PolisWeb.HostGuard
+
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Phoenix's and LiveView's own scripts, as their packages ship them: no

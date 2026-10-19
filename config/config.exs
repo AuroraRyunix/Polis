@@ -17,6 +17,10 @@ config :polis, PolisWeb.Gettext, default_locale: "en", locales: ~w(en nl)
 
 config :polis, PolisWeb.Endpoint,
   url: [host: "localhost"],
+  # The hosts the station answers to, not "localhost" alone (a hall PC is
+  # opened by its address) and not "anything" (DNS rebinding): see
+  # `PolisWeb.HostGuard`.
+  check_origin: {PolisWeb.HostGuard, :origin_allowed?, []},
   adapter: Bandit.PhoenixAdapter,
   # At a stop, open connections (the station page, a browser left on the
   # PDF) get three seconds to go, not Bandit's fifteen.

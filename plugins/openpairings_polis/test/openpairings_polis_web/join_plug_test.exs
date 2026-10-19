@@ -63,6 +63,12 @@ defmodule OpenPairingsPolisWeb.JoinPlugTest do
     assert json_response(join(code), 200)
   end
 
+  test "a code made before the feature was switched off is gone", %{code: code, user: user} do
+    {:ok, _} = PairingsEngine.Features.set_enabled(user, [])
+    assert json_response(join(code), 410)
+    refute Repo.get_by(Station, device_id: "dev-abc")
+  end
+
   test "an unknown code is a 404" do
     assert json_response(join("aaaaaaaaaaaaaaaa"), 404)
   end
