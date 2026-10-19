@@ -87,6 +87,7 @@ defmodule Polis.ReleaseFilesTest do
 
       assert workflow =~ "if: runner.os != 'macOS'"
       assert workflow =~ ~s(sh rel/macos/build_otp.sh "$HOME/otp-macos")
+
       assert workflow =~
                ~s(echo "MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_min }}" >> "$GITHUB_ENV")
 
