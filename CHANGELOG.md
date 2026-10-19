@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Security] **A web page can no longer drive the station by renaming it.** The page was open to any `Host` and any socket origin, so a page in the hall PC's browser could point its own name at 127.0.0.1, count as same-origin, and press the station's buttons. The station now answers 403 to a `Host` that is not its own (`localhost`, `127.0.0.1`, `PHX_HOST`, and with `POLIS_LISTEN=lan` the machine's host name and addresses), and the live socket checks the same list. The launcher, the in-app window and LAN mode ask for those names and carry on as before.
+
 ## [0.3.1] - 2026-10-18
 
 - [Fix] **Stopping no longer ends in a red stack trace.** On the way out the launcher-details process tidied up its secret by asking the application controller, which at that point is busy dying and answers everyone with an exit. The secret goes with the VM anyway, so now it lets the question go unanswered and leaves quietly.

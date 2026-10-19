@@ -20,7 +20,12 @@ data_dir =
 
 # Who may open the page: this machine (the default, and the safe one: there
 # is no PIN in this version), or the hall's network with POLIS_LISTEN=lan.
-listen = if System.get_env("POLIS_LISTEN") == "lan", do: {0, 0, 0, 0}, else: {127, 0, 0, 1}
+lan? = System.get_env("POLIS_LISTEN") == "lan"
+listen = if lan?, do: {0, 0, 0, 0}, else: {127, 0, 0, 1}
+
+# `PolisWeb.HostGuard` adds this machine's names and addresses to the hosts it
+# answers to only when the station was told to listen on the network.
+config :polis, listen: if(lan?, do: :lan, else: :loopback)
 
 if config_env() != :test do
   config :polis, PolisWeb.Endpoint,

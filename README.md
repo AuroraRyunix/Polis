@@ -85,7 +85,11 @@ The queue keeps the last fifty jobs with what happened to each, a Reprint
 button and the PDF. "Test print" prints a frame along the margins.
 
 `POLIS_LISTEN=lan` opens the page to the hall's network; the default is
-this machine only, because there is no PIN in this version.
+this machine only, because there is no PIN in this version. Either way the
+station answers only to its own names: `localhost`, `127.0.0.1`, `PHX_HOST`
+and, with `lan`, the machine's host name and addresses. A request that asks
+for any other host (a web page that pointed its own name at this machine, or
+a reverse proxy that forwards one) gets a 403.
 `POLIS_PRINTER=dry-run` writes every sheet as a PDF into
 `<data>/dry-run/` instead of printing it; development and the tests always
 do that.

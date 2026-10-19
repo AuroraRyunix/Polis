@@ -8,6 +8,8 @@ config :polis, PolisWeb.Endpoint,
   server: false
 
 config :polis,
+  # Phoenix's test connections ask for this host.
+  extra_hosts: ["www.example.com"],
   data_dir: Path.expand("../tmp/test/data", __DIR__),
   updates_timer: false,
   autostart_links: false,

@@ -1,6 +1,6 @@
 Config.CSP: Missing Content-Security-Policy,lib/polis_web/router.ex:11,48489F1
-Config.CSWH: Cross-Site Websocket Hijacking,lib/polis_web/endpoint.ex:6,24C01C4
-Config.CSWH: Cross-Site Websocket Hijacking,lib/polis_web/endpoint.ex:29,6D4C1A1
+Config.CSWH: Cross-Site Websocket Hijacking,lib/polis_web/endpoint.ex:10,4D97CEA
+Config.CSWH: Cross-Site Websocket Hijacking,lib/polis_web/endpoint.ex:33,3BBB530
 Config.HTTPS: HTTPS Not Enabled,config/prod.exs:0,2B5C077
 Traversal.FileModule: Directory Traversal in `File.chmod`,lib/polis/launcher_details.ex:155,66A8AC5
 Traversal.FileModule: Directory Traversal in `File.chmod`,lib/polis/launcher_details.ex:160,5F64B8
@@ -33,4 +33,4 @@ Traversal.FileModule: Directory Traversal in `File.write`,lib/polis/state.ex:219
 Traversal.FileModule: Directory Traversal in `File.write`,lib/polis/updates.ex:331,59989A4
 Traversal.SendFile: Directory Traversal in `send_file`,lib/polis_web/controllers/job_controller.ex:16,64D3D8B
 XSS.Raw: XSS,lib/polis_web/components.ex:11,46D3240
-XSS.SendResp: XSS in `send_resp`,lib/polis_web/endpoint.ex:45,2F5CCCA
+XSS.SendResp: XSS in `send_resp`,lib/polis_web/endpoint.ex:49,43EDD1

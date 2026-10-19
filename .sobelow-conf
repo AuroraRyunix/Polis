@@ -10,10 +10,13 @@
 #   * DOS.StringToAtom - atoms come from the app's own literals, bundled data or a
 #     regex-bounded letter set, never from a request.
 #   * CI.System - fixed commands with an argument list (no shell string).
-#   * Config.CSWH - NOT a false positive: config/prod.exs sets check_origin: false,
-#     so a DNS-rebinding page in the hall PC's browser can drive the control page
-#     (sweep 2026-10-19 POL-1/NUN-1). Skipped only until that fix lands with an
-#     origin list and a Host allow-list; then this line says why it is safe.
+#   * Config.CSWH - the socket origin is checked, but by a function, which
+#     Sobelow cannot read: config/config.exs sets check_origin to
+#     PolisWeb.HostGuard.origin_allowed?/1, which accepts localhost, 127.0.0.1,
+#     ::1, the endpoint url host, and (only with POLIS_LISTEN=lan) this
+#     machine's own name and addresses. The same list is a plug at the head of
+#     the endpoint that answers 403 to any other Host, so a DNS-rebinding page
+#     reaches neither the pages nor the socket (sweep 2026-10-19 POL-1).
 #   * Config.CSP - no script-src policy is set; Phoenix's default
 #     put_secure_browser_headers is on the browser pipeline. Reported, not fixed:
 #     it listens on localhost / behind the operator's own access layer only.
