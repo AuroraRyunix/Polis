@@ -99,9 +99,24 @@ defmodule OpenPairingsPolisWeb.StationsLive do
 
   ## ---------- events ----------
 
+  # Removing a station is let through even with the feature off: switching it
+  # off must not leave the admin unable to revoke the stations already joined.
+  @impl true
+  def handle_event("remove_station", %{"id" => id}, socket) do
+    case Stations.revoke(socket.assigns.tournament, id) do
+      {:ok, _station} ->
+        {:noreply,
+         socket
+         |> assign(note: gettext("Print station removed."), error: nil)
+         |> load_stations()}
+
+      {:error, :not_found} ->
+        {:noreply, assign(socket, error: gettext("That print station is not there any more."))}
+    end
+  end
+
   # The buttons are not drawn without the feature; a button not drawn is
   # still an event anybody can send.
-  @impl true
   def handle_event(_event, _params, %{assigns: %{enabled?: false}} = socket),
     do:
       {:noreply,
@@ -120,19 +135,6 @@ defmodule OpenPairingsPolisWeb.StationsLive do
   end
 
   def handle_event("close_join", _params, socket), do: {:noreply, assign(socket, join: nil)}
-
-  def handle_event("remove_station", %{"id" => id}, socket) do
-    case Stations.revoke(socket.assigns.tournament, id) do
-      {:ok, _station} ->
-        {:noreply,
-         socket
-         |> assign(note: gettext("Print station removed."), error: nil)
-         |> load_stations()}
-
-      {:error, :not_found} ->
-        {:noreply, assign(socket, error: gettext("That print station is not there any more."))}
-    end
-  end
 
   def handle_event("print_again", %{"print" => %{"what" => what}}, socket)
       when what in ["pairings", "placecards", "both"] do
@@ -453,7 +455,7 @@ defmodule OpenPairingsPolisWeb.StationsLive do
               </div>
 
               <button
-                :if={@tournament && @enabled?}
+                :if={@tournament}
                 type="button"
                 class="pe-btn"
                 id={"#{dom_id}-remove"}

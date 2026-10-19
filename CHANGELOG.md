@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **Switching the print station off now cuts the stations off.** The feature only removed the menu entry: stations already joined kept receiving every published round, a join link made in the fifteen minutes before still worked, and the admin could not remove a station from the page because the disabled-feature guard swallowed Remove. A station of an account without the feature is now refused at `hello` (as revoked) and at joining, and Remove works with the feature off.
+- [Fix] **A long printer name with an accent in it no longer makes the station flap.** The OpenPairings plug-in cut a status value at 200 bytes, which can be the middle of a UTF-8 character; the invalid string failed to encode, crashed the station's socket, and the station reconnected and sent it again, for ever. Status values are now cut by characters.
 - [Security] **A web page can no longer drive the station by renaming it.** The page was open to any `Host` and any socket origin, so a page in the hall PC's browser could point its own name at 127.0.0.1, count as same-origin, and press the station's buttons. The station now answers 403 to a `Host` that is not its own (`localhost`, `127.0.0.1`, `PHX_HOST`, and with `POLIS_LISTEN=lan` the machine's host name and addresses), and the live socket checks the same list. The launcher, the in-app window and LAN mode ask for those names and carry on as before.
 
 ## [0.3.1] - 2026-10-18

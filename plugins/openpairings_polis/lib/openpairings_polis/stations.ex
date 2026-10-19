@@ -34,9 +34,9 @@ defmodule OpenPairingsPolis.Stations do
   """
   import Ecto.Query
 
-  alias OpenPairingsPolis.{JoinCode, Station}
-  alias PairingsEngine.Accounts.Scope
-  alias PairingsEngine.{BoardRanges, Repo, Rooms}
+  alias OpenPairingsPolis.{JoinCode, Plugin, Station}
+  alias PairingsEngine.Accounts.{Scope, User}
+  alias PairingsEngine.{BoardRanges, Features, Repo, Rooms}
   alias PairingsEngine.Tournaments
   alias PairingsEngine.Tournaments.Tournament
 
@@ -102,7 +102,8 @@ defmodule OpenPairingsPolis.Stations do
   Spends `code` and registers the station `attrs` describes
   (`device`, `name`, `software`). `{:ok, station, key, tournament}`, or
   `{:error, :not_found}` for a code nobody made (or whose tournament is
-  gone), `{:error, :gone}` for one used or expired.
+  gone), `{:error, :gone}` for one used or expired - which includes a
+  code made before the account's print station was switched off.
   """
   def redeem(code, attrs) when is_binary(code) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -112,6 +113,7 @@ defmodule OpenPairingsPolis.Stations do
       with {:ok, join} <- usable_code(code_hash, now),
            %Tournament{} = tournament <-
              Tournaments.get_tournament(join.tournament_id) || {:error, :not_found},
+           :ok <- if(feature_on?(tournament), do: :ok, else: {:error, :gone}),
            :ok <- spend(join, now) do
         key = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
         station = register!(tournament, attrs, hash(key), now)
@@ -185,8 +187,9 @@ defmodule OpenPairingsPolis.Stations do
   @doc """
   The station `device_id` holding `key`, or `{:error, :key}` for no such
   pair and `{:error, :revoked}` for a station removed in OpenPairings (or
-  whose tournament went to the recycle bin). Every candidate's hash is
-  compared in constant time.
+  whose tournament went to the recycle bin, or whose account has switched
+  the print station off - the switch is access, not just a menu entry).
+  Every candidate's hash is compared in constant time.
   """
   def authenticate(device_id, key) when is_binary(device_id) and is_binary(key) do
     key_hash = hash(key)
@@ -201,13 +204,25 @@ defmodule OpenPairingsPolis.Stations do
         {:error, :revoked}
 
       station ->
-        if Tournaments.get_tournament(station.tournament_id),
-          do: {:ok, station},
-          else: {:error, :revoked}
+        case Tournaments.get_tournament(station.tournament_id) do
+          %Tournament{} = tournament ->
+            if feature_on?(tournament), do: {:ok, station}, else: {:error, :revoked}
+
+          nil ->
+            {:error, :revoked}
+        end
     end
   end
 
   def authenticate(_device_id, _key), do: {:error, :key}
+
+  # Whether the account that owns `tournament` has the print station switched
+  # on. Asked at every join and every hello: a station is a way to receive the
+  # tournament's rounds, so turning the feature off has to cut it off.
+  defp feature_on?(%Tournament{user_id: user_id}) do
+    user = user_id && Repo.get(User, user_id)
+    Features.enabled?(user, Plugin.feature())
+  end
 
   @doc "Marks `station` connected by the socket that calls itself `ref`."
   def connected(%Station{} = station, ref) do
@@ -245,7 +260,7 @@ defmodule OpenPairingsPolis.Stations do
   @doc """
   Keeps what the station said about itself in its `status` frame: a small
   map of short values, trimmed to `@status_keys` keys of at most
-  `@status_value_bytes` bytes. It is shown on a page, not trusted.
+  `@status_value_bytes` characters. It is shown on a page, not trusted.
   """
   def put_status(%Station{} = station, status) when is_map(status) do
     clean =
@@ -266,8 +281,10 @@ defmodule OpenPairingsPolis.Stations do
 
   defp scalar?(v), do: is_binary(v) or is_number(v) or is_boolean(v) or is_nil(v)
 
+  # By characters, not bytes: half a UTF-8 character does not survive the
+  # JSON column, and the station that sent it would be dropped and sent it again.
   defp trim_value(v) when is_binary(v) and byte_size(v) > @status_value_bytes,
-    do: binary_part(v, 0, @status_value_bytes)
+    do: String.slice(v, 0, @status_value_bytes)
 
   defp trim_value(v), do: v
 

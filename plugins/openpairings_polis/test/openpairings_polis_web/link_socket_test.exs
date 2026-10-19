@@ -63,6 +63,16 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       assert %{"type" => "refused", "reason" => "revoked"} = decode(frame)
     end
 
+    test "a station of an account that switched the feature off is refused as revoked", %{
+      station: s,
+      key: key,
+      user: user
+    } do
+      {:ok, _} = PairingsEngine.Features.set_enabled(user, [])
+      assert {:stop, :normal, 1000, [frame], _} = dial(s.device_id, key)
+      assert %{"type" => "refused", "reason" => "revoked"} = decode(frame)
+    end
+
     test "another protocol version is refused", %{station: s, key: key} do
       assert {:stop, :normal, 1000, [frame], _} = dial(s.device_id, key, 2)
       assert %{"type" => "refused", "reason" => "version"} = decode(frame)
@@ -176,6 +186,19 @@ defmodule OpenPairingsPolisWeb.LinkSocketTest do
       leave = Jason.encode!(%{type: "leave"})
       assert {:stop, :normal, _} = LinkSocket.handle_in({leave, [opcode: :text]}, state)
       refute Repo.get(Station, s.id)
+    end
+
+    test "a status value cut at the limit stays valid UTF-8", %{station: s, key: key} do
+      {_frames, state} = frames(dial(s.device_id, key))
+
+      # 199 ASCII bytes, then a two-byte letter straddling the 200-byte limit.
+      printer = String.duplicate("a", 199) <> "é" <> "tail"
+      status = Jason.encode!(%{type: "status", printer: printer})
+      {:ok, _state} = LinkSocket.handle_in({status, [opcode: :text]}, state)
+
+      kept = Repo.get!(Station, s.id).status["printer"]
+      assert String.valid?(kept)
+      assert String.starts_with?(kept, String.duplicate("a", 199) <> "é")
     end
 
     test "a stale socket closing does not mark a reconnected station offline", %{

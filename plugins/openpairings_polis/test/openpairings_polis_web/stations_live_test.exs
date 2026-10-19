@@ -117,6 +117,22 @@ defmodule OpenPairingsPolisWeb.StationsLiveTest do
       refute has_element?(view, "#polis-print-form")
     end
 
+    test "with the feature off a joined station can still be removed", %{
+      conn: conn,
+      scope: scope,
+      user: user,
+      tournament: t
+    } do
+      {station, _key} = joined_station!(scope, t)
+      {:ok, _} = Features.set_enabled(user, [])
+
+      {:ok, view, _html} = live(conn, "/p/polis/tournaments/#{t.id}")
+      assert has_element?(view, "#polis-not-enabled")
+
+      view |> element("#stations-#{station.id}-remove") |> render_click()
+      assert Repo.get!(Station, station.id).revoked_at
+    end
+
     test "without the feature there is nothing to add", %{conn: conn, user: user, tournament: t} do
       {:ok, _} = Features.set_enabled(user, [])
       {:ok, view, _html} = live(conn, "/p/polis/tournaments/#{t.id}")

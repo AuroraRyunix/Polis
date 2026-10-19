@@ -35,6 +35,12 @@ tournament's Settings get a "Print station" page
 beside it. It has no tab in the tournament's top bar: a print station is
 set up once and then left alone.
 
+The feature is access, not just a menu entry: the plugin asks whether the
+tournament owner's account still has it on when a station joins (a join link
+made before the switch-off is refused as expired) and at every `hello` (a
+station that was joined before is refused as `revoked`, and the admin can
+still remove it from the page, which keeps listing what had joined).
+
 ## What happens
 
 1. On `/p/polis/tournaments/:id` (the tournament's Settings → Print
