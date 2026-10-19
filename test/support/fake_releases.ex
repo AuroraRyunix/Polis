@@ -23,7 +23,8 @@ defmodule Polis.FakeReleases do
       {"polis-windows-x86_64-portable.zip", 50_000_000},
       {"polis-linux-x86_64.tar.gz", 30_000_000},
       {"polis-linux-aarch64.tar.gz", 29_000_000},
-      {"polis-macos-aarch64.zip", 28_000_000}
+      {"polis-macos-aarch64.zip", 28_000_000},
+      {"polis-macos-x86_64.zip", 29_500_000}
     ]
 
     release = %{

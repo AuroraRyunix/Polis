@@ -19,7 +19,8 @@ addresses are the same for every release.
 | Windows, no install | [polis-windows-x86_64-portable.zip](https://github.com/teapot-chess/Polis/releases/latest/download/polis-windows-x86_64-portable.zip) |
 | Linux, PC | [polis-linux-x86_64.tar.gz](https://github.com/teapot-chess/Polis/releases/latest/download/polis-linux-x86_64.tar.gz) |
 | Linux, Raspberry Pi (64-bit) and other arm64 | [polis-linux-aarch64.tar.gz](https://github.com/teapot-chess/Polis/releases/latest/download/polis-linux-aarch64.tar.gz) |
-| Mac, Apple Silicon | [polis-macos-aarch64.zip](https://github.com/teapot-chess/Polis/releases/latest/download/polis-macos-aarch64.zip) |
+| Mac, Apple Silicon (macOS 11 and newer) | [polis-macos-aarch64.zip](https://github.com/teapot-chess/Polis/releases/latest/download/polis-macos-aarch64.zip) |
+| Mac, Intel (macOS 10.13 and newer) | [polis-macos-x86_64.zip](https://github.com/teapot-chess/Polis/releases/latest/download/polis-macos-x86_64.zip) |
 | Checksums | [SHA256SUMS](https://github.com/teapot-chess/Polis/releases/latest/download/SHA256SUMS) |
 
 **Linux**, one line, as a service that starts with the machine:

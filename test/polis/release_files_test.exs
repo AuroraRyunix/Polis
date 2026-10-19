@@ -53,7 +53,7 @@ defmodule Polis.ReleaseFilesTest do
       # ...and every fixed name, in the workflow and in the README.
       for name <- ~w(Polis-Setup.exe polis-windows-x86_64-portable.zip
                      polis-linux-x86_64.tar.gz polis-linux-aarch64.tar.gz install.sh
-                     polis-macos-aarch64.zip) do
+                     polis-macos-aarch64.zip polis-macos-x86_64.zip) do
         assert workflow =~ name, "release.yml does not publish #{name}"
         assert readme =~ "releases/latest/download/#{name}", "the README does not link #{name}"
       end
@@ -67,24 +67,29 @@ defmodule Polis.ReleaseFilesTest do
 
     test "the Linux archives are built where a Raspberry Pi can run them" do
       workflow = read(".github/workflows/release.yml")
-      assert workflow =~ "runner: ubuntu-22.04, target: linux-x86_64"
-      assert workflow =~ "runner: ubuntu-22.04-arm, target: linux-aarch64"
+      assert workflow =~ ~s("runner":"ubuntu-22.04","target":"linux-x86_64")
+      assert workflow =~ ~s("runner":"ubuntu-22.04-arm","target":"linux-aarch64")
       assert read("rel/linux/install.sh") =~ ~s([ "$minor" -lt 35 ])
     end
 
-    test "the Mac app is built for Apple Silicon and macOS 11" do
+    test "the Mac app is built for Apple Silicon (macOS 11) and, for a release, Intel (macOS 10.13)" do
       workflow = read(".github/workflows/release.yml")
       build_otp = read("rel/macos/build_otp.sh")
       build_app = read("rel/macos/build_app.sh")
 
-      assert workflow =~ "runner: macos-15, target: macos-aarch64"
-      refute workflow =~ "macos-15-intel"
+      assert workflow =~ ~s("runner":"macos-15","target":"macos-aarch64","macos_min":"11.0")
+      # The Intel build is made for a release or a hand-started run, never
+      # for an ordinary push: the plan job adds it.
+      assert workflow =~ ~s("runner":"macos-15-intel","target":"macos-x86_64","macos_min":"10.13")
+      assert workflow =~ ~s(if [ "$PUBLISH" = true ] || [ "$EVENT" = workflow_dispatch ])
       assert workflow =~ ~s(dist/polis-${{ matrix.target }}.zip)
       assert workflow =~ "if: runner.os == 'macOS' && steps.apple.outputs.sign == 'true'"
 
       assert workflow =~ "if: runner.os != 'macOS'"
       assert workflow =~ ~s(sh rel/macos/build_otp.sh "$HOME/otp-macos")
-      assert workflow =~ ~s(echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> "$GITHUB_ENV")
+
+      assert workflow =~
+               ~s(echo "MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_min }}" >> "$GITHUB_ENV")
 
       for var <- ~w(OTP_VERSION OPENSSL_VERSION ELIXIR_VERSION) do
         assert [_, version] = Regex.run(~r/^\s+#{var}: "([^"]+)"$/m, workflow)
@@ -94,8 +99,10 @@ defmodule Polis.ReleaseFilesTest do
                "build_otp.sh has no checksum for #{var} #{version}"
       end
 
-      assert build_app =~ "supported=11.0"
-      assert build_app =~ "-target arm64-apple-macos11"
+      assert build_app =~ "supported=${MACOSX_DEPLOYMENT_TARGET:-11.0}"
+      assert build_app =~ "swift-stdlib-tool"
+      assert build_otp =~ "darwin64-x86_64-cc"
+      assert build_app =~ ~s(-target "$swift_arch-apple-macos$supported")
     end
 
     test "the release is started and asked for its manual, as the help page says it is" do
