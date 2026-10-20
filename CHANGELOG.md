@@ -15,6 +15,8 @@ tagged so that a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Releases carry signed build provenance.** Every file of a release, `SHA256SUMS` included, is now attested through GitHub and Sigstore, keyless, so `gh attestation verify <file> --repo teapot-chess/Polis` can say who built it and from what. Until now the checksums vouched for a download only against the release they sat in, which is a witness who was hired by the defendant.
+
 ## [0.4.2] - 2026-10-20
 
 - [Fix] **Stopping from Ascella, an update or a logout no longer hangs on "Stopping".** On a Mac, the window waited for its server to end inside the very queue that was to bring the news, so the server ended and the window kept saying "Stopping" until somebody force-quit it. Quit from the menu never had the problem, which is how it survived this long. Any stop that hangs anyway now ends after forty seconds.
