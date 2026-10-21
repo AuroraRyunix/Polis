@@ -13,7 +13,7 @@ below. None of it has been watched on a real Mac yet.
 | Apple Silicon (M1 and later) | `polis-macos-aarch64.zip`, built on `macos-15`, macOS 11 and newer |
 | Intel | `polis-macos-x86_64.zip`, built on `macos-15-intel`, macOS 10.13 and newer, only for a release or a hand-started run |
 | Oldest macOS | what `build_app.sh` finds every binary accepts, written into `Info.plist` |
-| Signing | ad-hoc until there is a Developer ID (`docs/releasing.md`) |
+| Signing | Developer ID, hardened runtime, notarised and stapled (`docs/releasing.md`) |
 | Data | `~/Library/Application Support/PolisData` - `state.json`, `jobs/`, the secret. Never inside the app, which `Polis.DataHome` refuses |
 | Printing | CUPS, which is macOS's own printing system: `lpstat` for the list, `lp` to print. The printers are the ones in System Settings > Printers & Scanners |
 
@@ -71,16 +71,23 @@ Polis is stopped nothing prints.
 
 ## The first start
 
-Downloaded from the internet and not notarised, the app is stopped by
-Gatekeeper the first time: System Settings > Privacy & Security, scroll to
-"Polis was blocked", **Open Anyway**. Once.
+Every Mach-O file in the app (the Erlang runtime, `beam.smp`, the NIF
+libraries) is signed with the Developer ID Application certificate, the
+hardened runtime and a timestamp, from the inside out, then the bundle. The
+BEAM's JIT needs entitlements the hardened runtime otherwise forbids
+(`rel/macos/entitlements.plist` says which). The bundle is then sent to
+Apple's notary service and the ticket is stapled to it, so a Mac with no
+network at the venue opens it without a question. The workflow asks
+Gatekeeper itself (`spctl -a -vvv -t exec`) and fails unless the answer is
+"Notarized Developer ID".
 
-"Polis is damaged and can't be opened" means the quarantine flag on an
-ad-hoc signed app, not damage:
+So the first start is a double-click. Only a build from a fork, which has no
+signing secrets, is ad-hoc signed; macOS then refuses it once and *System
+Settings > Privacy & Security > Open Anyway* is the way in.
 
-```sh
-xattr -dr com.apple.quarantine /Applications/Polis.app
-```
+To try the signing without a release: run the workflow by hand on any branch
+with **mac_only** ticked. It builds, signs, notarises and checks the Mac
+apps and publishes nothing.
 
 ## Printing from a Mac
 
