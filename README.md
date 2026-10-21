@@ -45,9 +45,8 @@ up in it. The log is `journalctl -u polis`.
 
 **Windows**: Windows says it does not know the program, as it does of any
 unsigned installer: "More info", then "Run anyway". The data is in
-`%LOCALAPPDATA%\PolisData`, never in the install folder. **macOS**: open
-`Polis.app` the first time with *Open Anyway* in System Settings
-([docs/macos.md](docs/macos.md)).
+`%LOCALAPPDATA%\PolisData`, never in the install folder. **macOS**: signed and
+notarised; unzip and open `Polis.app` ([docs/macos.md](docs/macos.md)).
 
 An installed copy looks for a newer release now and then (one small
 request to GitHub, switched off by a checkbox) and offers it; it installs
